@@ -1,0 +1,11 @@
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+META-INF/
+
+# Maven
+target/
+release.properties
+/bin/
