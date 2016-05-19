@@ -15,6 +15,7 @@ import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
+import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
@@ -105,13 +106,13 @@ public class NewProjectTest {
          * [NewProjectAction] Compute the initial commit from the input ontology
          */
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
-        List<OWLOntologyChange> uncommittedChanges = visitor.getChanges();
+        List<OWLOntologyChange> changes = visitor.getChanges();
         RevisionMetadata metadata = new RevisionMetadata(
                 localClient.getUserInfo().getId(),
                 localClient.getUserInfo().getName(),
                 localClient.getUserInfo().getEmailAddress(),
                 "First commit");
-        CommitBundle commitBundle = new CommitBundleImpl(metadata, uncommittedChanges, DocumentRevision.START_REVISION);
+        CommitBundle commitBundle = new CommitBundleImpl(DocumentRevision.START_REVISION, new Commit(metadata, changes));
         
         /*
          * [NewProjectAction] Call the remote method for creating a new project with an initial commit.
@@ -121,11 +122,16 @@ public class NewProjectTest {
                 projectId, projectName, description, owner, Optional.ofNullable(options), Optional.ofNullable(commitBundle));
         
         /*
+         * [NewProjectAction] Commit the initial changes to the server
+         */
+        ChangeHistory changeHistory = localClient.commit(projectId, commitBundle);
+        
+        /*
          * [NewProjectAction] Finally create the local tracking object that contains a local copy of
          * the change history, the OWL ontology and the remote reference (i.e., ServerDocument).
          */
         VersionedOWLOntology vont = new VersionedOWLOntologyImpl(document, ontology);
-        vont.addRevision(metadata, uncommittedChanges);
+        vont.update(changeHistory);
         
         // Assert the server document
         assertThat(document, is(notNullValue()));
