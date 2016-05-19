@@ -27,11 +27,6 @@
     <dependencies>
         <dependency>
             <groupId>edu.stanford.protege</groupId>
-            <artifactId>protege-server</artifactId>
-            <version>${protege-server.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.stanford.protege</groupId>
             <artifactId>protege-client</artifactId>
             <version>${protege-client.version}</version>
         </dependency>
@@ -80,9 +75,6 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.6</version>
                 <configuration>
-                    <!-- SWRLAPIIntegrationTestBase not currently set up 
-                        to allow parallel tests -->
-                    <!-- <parallel>methods</parallel> -->
                     <encoding>UTF-8</encoding>
                 </configuration>
                 <executions>
