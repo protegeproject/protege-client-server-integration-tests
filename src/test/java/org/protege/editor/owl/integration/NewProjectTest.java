@@ -5,15 +5,9 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import org.protege.editor.owl.client.LocalClient;
-import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.ui.DefaultUserAuthenticator;
 import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
-import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
-import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
@@ -23,28 +17,19 @@ import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLRuntimeException;
 
-import java.io.File;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
-import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.AuthToken;
 import edu.stanford.protege.metaproject.api.Description;
-import edu.stanford.protege.metaproject.api.MetaprojectFactory;
 import edu.stanford.protege.metaproject.api.Name;
-import edu.stanford.protege.metaproject.api.PlainPassword;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.ProjectOptions;
 import edu.stanford.protege.metaproject.api.UserId;
@@ -54,46 +39,20 @@ import edu.stanford.protege.metaproject.api.UserId;
  * Stanford Center for Biomedical Informatics Research
  */
 @RunWith(MockitoJUnitRunner.class)
-public class NewProjectTest {
+public class NewProjectTest extends BaseTest {
 
-    private static final String SERVER_ADDRESS = "rmi://localhost:5100";
-    private static final int REGISTRY_PORT = 5200;
+    @Override
+    protected String getUsername() { return "root"; }
 
-    private static final DocumentRevision R0 = DocumentRevision.START_REVISION;
-    private static final DocumentRevision R1 = DocumentRevision.create(1);
-
-    private static MetaprojectFactory f = Manager.getFactory();
-
-    private Client localClient;
-
-    protected static final File pizzaOntology() {
-        try {
-            return new File(NewProjectTest.class.getResource("/pizza.owl").toURI());
-        }
-        catch (URISyntaxException e) {
-            throw new OWLRuntimeException("File not found", e);
-        }
-    }
-
-    @Before
-    public void connectToServer() throws Exception {
-        RemoteLoginService loginService = (RemoteLoginService) ServerUtils
-                .getRemoteService(SERVER_ADDRESS, REGISTRY_PORT, RmiLoginService.LOGIN_SERVICE);
-        DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
-
-        UserId userId = f.getUserId("root");
-        PlainPassword plainPassword = f.getPlainPassword("rootpwd");
-        AuthToken authToken = authenticator.hasValidCredentials(userId, plainPassword);
-
-        localClient = new LocalClient(authToken, SERVER_ADDRESS, REGISTRY_PORT);
-    }
+    @Override
+    protected String getPassword() { return "rootpwd";  }
 
     @Test
     public void createNewProject() throws Exception {
         /*
          * [GUI] The input project properties
          */
-        String uniqueness = createUniqueId();
+        String uniqueness = uuid8char();
         ProjectId projectId = f.getProjectId("pizza-" + uniqueness);
         Name projectName = f.getName("Pizza Project (" + uniqueness + ")" );
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
@@ -111,9 +70,9 @@ public class NewProjectTest {
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
         List<OWLOntologyChange> changes = visitor.getChanges();
         RevisionMetadata metadata = new RevisionMetadata(
-                localClient.getUserInfo().getId(),
-                localClient.getUserInfo().getName(),
-                localClient.getUserInfo().getEmailAddress(),
+                getClient().getUserInfo().getId(),
+                getClient().getUserInfo().getName(),
+                getClient().getUserInfo().getEmailAddress(),
                 "First commit");
         CommitBundle commitBundle = new CommitBundleImpl(R0, new Commit(metadata, changes));
         
@@ -121,13 +80,13 @@ public class NewProjectTest {
          * [NewProjectAction] Call the remote method for creating a new project with an initial commit.
          * The method will return a ServerDocument which contains the remote resource information.
          */
-        ServerDocument document = localClient.createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
+        ServerDocument document = getClient().createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
         
         /*
          * [NewProjectAction] Commit the initial changes to the server. The server will return back
          * the change history which represents the accepted commit changes.
          */
-        ChangeHistory changeHistory = localClient.commit(projectId, commitBundle);
+        ChangeHistory changeHistory = getClient().commit(projectId, commitBundle);
         
         /*
          * [NewProjectAction] Finally create the local tracking object that contains a local copy of
@@ -166,10 +125,5 @@ public class NewProjectTest {
         assertThat(localChangeHistory.getMetadata().size(), is(1));
         assertThat(localChangeHistory.getRevisions().size(), is(1));
         assertThat(localChangeHistory.getChangesForRevision(R1).size(), is(945));
-    }
-
-    private String createUniqueId() {
-        final UUID uuid = UUID.randomUUID();
-        return uuid.toString().replace("-", "").substring(0, 8);
     }
 }
