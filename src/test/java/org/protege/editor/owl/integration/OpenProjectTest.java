@@ -42,12 +42,6 @@ public class OpenProjectTest extends BaseTest {
 
     private ProjectId projectId;
 
-    @Override
-    protected String getUsername() { return "root"; }
-
-    @Override
-    protected String getPassword() { return "rootpwd";  }
-
     @Before
     public void createProject() throws Exception {
         /*
@@ -67,13 +61,13 @@ public class OpenProjectTest extends BaseTest {
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
         List<OWLOntologyChange> changes = visitor.getChanges();
         RevisionMetadata metadata = new RevisionMetadata(
-                getClient().getUserInfo().getId(),
-                getClient().getUserInfo().getName(),
-                getClient().getUserInfo().getEmailAddress(),
+                getAdmin().getUserInfo().getId(),
+                getAdmin().getUserInfo().getName(),
+                getAdmin().getUserInfo().getEmailAddress(),
                 "First commit");
         CommitBundle commitBundle = new CommitBundleImpl(R0, new Commit(metadata, changes));
-        ServerDocument document = getClient().createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
-        ChangeHistory changeHistory = getClient().commit(projectId, commitBundle);
+        ServerDocument document = getAdmin().createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
+        ChangeHistory changeHistory = getAdmin().commit(projectId, commitBundle);
         vont = new VersionedOWLOntologyImpl(document, ontology);
         vont.update(changeHistory);
     }

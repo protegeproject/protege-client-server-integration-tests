@@ -31,7 +31,7 @@ public abstract class BaseTest {
 
     protected static MetaprojectFactory f = Manager.getFactory();
 
-    private Client localClient;
+    private Client admin;
 
     protected static final File pizzaOntology() {
         try {
@@ -44,24 +44,14 @@ public abstract class BaseTest {
 
     @Before
     public void connectToServer() throws Exception {
-        UserId userId = f.getUserId(getUsername());
-        PlainPassword password = f.getPlainPassword(getPassword());
-        localClient = login(userId, password);
+        UserId userId = f.getUserId("root");
+        PlainPassword password = f.getPlainPassword("rootpwd");
+        admin = login(userId, password);
     }
 
-    protected Client getClient() {
-        return localClient;
+    protected Client getAdmin() {
+        return admin;
     }
-
-    /**
-     * Get the user's id name
-     */
-    protected abstract String getUsername();
-
-    /**
-     * Get the corresponding user's password
-     */
-    protected abstract String getPassword();
 
     protected static Client login(UserId userId, PlainPassword password) throws Exception {
         RemoteLoginService loginService = (RemoteLoginService) ServerUtils

@@ -38,12 +38,6 @@ import edu.stanford.protege.metaproject.api.UserId;
  */
 public class NewProjectTest extends BaseTest {
 
-    @Override
-    protected String getUsername() { return "root"; }
-
-    @Override
-    protected String getPassword() { return "rootpwd";  }
-
     @Test
     public void createNewProject() throws Exception {
         /*
@@ -67,9 +61,9 @@ public class NewProjectTest extends BaseTest {
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
         List<OWLOntologyChange> changes = visitor.getChanges();
         RevisionMetadata metadata = new RevisionMetadata(
-                getClient().getUserInfo().getId(),
-                getClient().getUserInfo().getName(),
-                getClient().getUserInfo().getEmailAddress(),
+                getAdmin().getUserInfo().getId(),
+                getAdmin().getUserInfo().getName(),
+                getAdmin().getUserInfo().getEmailAddress(),
                 "First commit");
         CommitBundle commitBundle = new CommitBundleImpl(R0, new Commit(metadata, changes));
         
@@ -77,13 +71,13 @@ public class NewProjectTest extends BaseTest {
          * [NewProjectAction] Call the remote method for creating a new project with an initial commit.
          * The method will return a ServerDocument which contains the remote resource information.
          */
-        ServerDocument document = getClient().createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
+        ServerDocument document = getAdmin().createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
         
         /*
          * [NewProjectAction] Commit the initial changes to the server. The server will return back
          * the change history which represents the accepted commit changes.
          */
-        ChangeHistory changeHistory = getClient().commit(projectId, commitBundle);
+        ChangeHistory changeHistory = getAdmin().commit(projectId, commitBundle);
         
         /*
          * [NewProjectAction] Finally create the local tracking object that contains a local copy of
