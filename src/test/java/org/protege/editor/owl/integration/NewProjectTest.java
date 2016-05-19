@@ -17,6 +17,7 @@ import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
+import org.junit.After;
 import org.junit.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -38,14 +39,15 @@ import edu.stanford.protege.metaproject.api.UserId;
  */
 public class NewProjectTest extends BaseTest {
 
+    private ProjectId projectId;
+
     @Test
     public void createNewProject() throws Exception {
         /*
          * [GUI] The input project properties
          */
-        String uniqueness = uuid8char();
-        ProjectId projectId = f.getProjectId("pizza-" + uniqueness);
-        Name projectName = f.getName("Pizza Project (" + uniqueness + ")" );
+        projectId = f.getProjectId("pizza");
+        Name projectName = f.getName("Pizza Project" );
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
         ProjectOptions options = null;
@@ -116,5 +118,10 @@ public class NewProjectTest extends BaseTest {
         assertThat(localChangeHistory.getMetadata().size(), is(1));
         assertThat(localChangeHistory.getRevisions().size(), is(1));
         assertThat(localChangeHistory.getChangesForRevision(R1).size(), is(945));
+    }
+
+    @After
+    public void removeProject() throws Exception {
+        getAdmin().deleteProject(projectId);
     }
 }

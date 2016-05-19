@@ -16,6 +16,7 @@ import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -47,9 +48,8 @@ public class OpenProjectTest extends BaseTest {
         /*
          * User inputs part
          */
-        String uniqueness = uuid8char();
-        projectId = f.getProjectId("pizza-" + uniqueness);
-        Name projectName = f.getName("Pizza Project (" + uniqueness + ")" );
+        projectId = f.getProjectId("pizza");
+        Name projectName = f.getName("Pizza Project" );
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
         ProjectOptions options = null;
@@ -109,5 +109,10 @@ public class OpenProjectTest extends BaseTest {
         OWLOntology originalOntology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(pizzaOntology());
         assertThat(ontology.getSignature(), is(originalOntology.getSignature()));
         assertThat(ontology.getAxiomCount(), is(originalOntology.getAxiomCount()));
+    }
+
+    @After
+    public void removeProject() throws Exception {
+        getAdmin().deleteProject(projectId);
     }
 }
