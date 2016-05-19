@@ -140,10 +140,10 @@ public class NewProjectTest {
         assertThat(document.getHistoryFile().length(), is(greaterThan(new Long(0))));
         
         // Assert the remote change history
-        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(document);
-        assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
-        assertThat(remoteChangeHistory.getBaseRevision(), is(DocumentRevision.START_REVISION));
-        assertThat(remoteChangeHistory.getHeadRevision(), is(DocumentRevision.create(1)));
+//        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(document);
+//        assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
+//        assertThat(remoteChangeHistory.getBaseRevision(), is(DocumentRevision.START_REVISION));
+//        assertThat(remoteChangeHistory.getHeadRevision(), is(DocumentRevision.create(1)));
         
         // Assert the versioned ontology
         assertThat(vont.getBaseRevision(), is(DocumentRevision.START_REVISION));
