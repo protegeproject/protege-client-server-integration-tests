@@ -59,6 +59,9 @@ public class NewProjectTest {
     private static final String SERVER_ADDRESS = "rmi://localhost:5100";
     private static final int REGISTRY_PORT = 5200;
 
+    private static final DocumentRevision R0 = DocumentRevision.START_REVISION;
+    private static final DocumentRevision R1 = DocumentRevision.create(1);
+
     private static MetaprojectFactory f = Manager.getFactory();
 
     private Client localClient;
@@ -112,7 +115,7 @@ public class NewProjectTest {
                 localClient.getUserInfo().getName(),
                 localClient.getUserInfo().getEmailAddress(),
                 "First commit");
-        CommitBundle commitBundle = new CommitBundleImpl(DocumentRevision.START_REVISION, new Commit(metadata, changes));
+        CommitBundle commitBundle = new CommitBundleImpl(R0, new Commit(metadata, changes));
         
         /*
          * [NewProjectAction] Call the remote method for creating a new project with an initial commit.
@@ -145,18 +148,24 @@ public class NewProjectTest {
         // Assert the remote change history
         ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(document);
         assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
-        assertThat(remoteChangeHistory.getBaseRevision(), is(DocumentRevision.START_REVISION));
-        assertThat(remoteChangeHistory.getHeadRevision(), is(DocumentRevision.create(1)));
+        assertThat(remoteChangeHistory.getBaseRevision(), is(R0));
+        assertThat(remoteChangeHistory.getHeadRevision(), is(R1));
+        assertThat(remoteChangeHistory.getMetadata().size(), is(1));
+        assertThat(remoteChangeHistory.getRevisions().size(), is(1));
+        assertThat(remoteChangeHistory.getChangesForRevision(R1).size(), is(945));
         
         // Assert the versioned ontology
         assertThat(vont.getBaseRevision(), is(DocumentRevision.START_REVISION));
         assertThat(vont.getHeadRevision(), is(DocumentRevision.create(1)));
         
-        // Assert the local change history
+        // Assert the local change history. Expected to have the same as remote change history
         ChangeHistory localChangeHistory = vont.getChangeHistory();
         assertThat("The local change history should not be empty", !localChangeHistory.isEmpty());
-        assertThat(localChangeHistory.getBaseRevision(), is(DocumentRevision.START_REVISION));
-        assertThat(localChangeHistory.getHeadRevision(), is(DocumentRevision.create(1)));
+        assertThat(localChangeHistory.getBaseRevision(), is(R0));
+        assertThat(localChangeHistory.getHeadRevision(), is(R1));
+        assertThat(localChangeHistory.getMetadata().size(), is(1));
+        assertThat(localChangeHistory.getRevisions().size(), is(1));
+        assertThat(localChangeHistory.getChangesForRevision(R1).size(), is(945));
     }
 
     private String createUniqueId() {
