@@ -18,8 +18,6 @@ import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -38,7 +36,6 @@ import edu.stanford.protege.metaproject.api.UserId;
  * @author Josef Hardi <johardi@stanford.edu> <br>
  * Stanford Center for Biomedical Informatics Research
  */
-@RunWith(MockitoJUnitRunner.class)
 public class NewProjectTest extends BaseTest {
 
     @Override
