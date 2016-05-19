@@ -118,8 +118,7 @@ public class NewProjectTest {
          * [NewProjectAction] Call the remote method for creating a new project with an initial commit.
          * The method will return a ServerDocument which contains the remote resource information.
          */
-        ServerDocument document = localClient.createProject(
-                projectId, projectName, description, owner, Optional.ofNullable(options), Optional.ofNullable(commitBundle));
+        ServerDocument document = localClient.createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
         
         /*
          * [NewProjectAction] Commit the initial changes to the server
