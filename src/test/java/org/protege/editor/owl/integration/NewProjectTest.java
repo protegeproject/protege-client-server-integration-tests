@@ -121,13 +121,16 @@ public class NewProjectTest {
         ServerDocument document = localClient.createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
         
         /*
-         * [NewProjectAction] Commit the initial changes to the server
+         * [NewProjectAction] Commit the initial changes to the server. The server will return back
+         * the change history which represents the accepted commit changes.
          */
         ChangeHistory changeHistory = localClient.commit(projectId, commitBundle);
         
         /*
          * [NewProjectAction] Finally create the local tracking object that contains a local copy of
          * the change history, the OWL ontology and the remote reference (i.e., ServerDocument).
+         * The ClientSession will keep the reference to this versioned ontology within Protege so
+         * the object can be used across modules in Protege.
          */
         VersionedOWLOntology vont = new VersionedOWLOntologyImpl(document, ontology);
         vont.update(changeHistory);
@@ -140,10 +143,10 @@ public class NewProjectTest {
         assertThat(document.getHistoryFile().length(), is(greaterThan(new Long(0))));
         
         // Assert the remote change history
-//        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(document);
-//        assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
-//        assertThat(remoteChangeHistory.getBaseRevision(), is(DocumentRevision.START_REVISION));
-//        assertThat(remoteChangeHistory.getHeadRevision(), is(DocumentRevision.create(1)));
+        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(document);
+        assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
+        assertThat(remoteChangeHistory.getBaseRevision(), is(DocumentRevision.START_REVISION));
+        assertThat(remoteChangeHistory.getHeadRevision(), is(DocumentRevision.create(1)));
         
         // Assert the versioned ontology
         assertThat(vont.getBaseRevision(), is(DocumentRevision.START_REVISION));
