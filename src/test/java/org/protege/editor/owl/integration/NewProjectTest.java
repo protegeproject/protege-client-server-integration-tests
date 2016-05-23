@@ -92,6 +92,6 @@ public class NewProjectTest extends BaseTest {
 
     @After
     public void removeProject() throws Exception {
-        getAdmin().deleteProject(projectId);
+        getAdmin().deleteProject(projectId, true);
     }
 }
