@@ -10,12 +10,9 @@ import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
 import org.protege.editor.owl.server.versioning.Commit;
-import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.junit.After;
 import org.junit.Test;
@@ -73,51 +70,24 @@ public class NewProjectTest extends BaseTest {
          * [NewProjectAction] Call the remote method for creating a new project with an initial commit.
          * The method will return a ServerDocument which contains the remote resource information.
          */
-        ServerDocument document = getAdmin().createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
-        
-        /*
-         * [NewProjectAction] Commit the initial changes to the server. The server will return back
-         * the change history which represents the accepted commit changes.
-         */
-        ChangeHistory changeHistory = getAdmin().commit(projectId, commitBundle);
-        
-        /*
-         * [NewProjectAction] Finally create the local tracking object that contains a local copy of
-         * the change history, the OWL ontology and the remote reference (i.e., ServerDocument).
-         * The ClientSession will keep the reference to this versioned ontology within Protege so
-         * the object can be used across modules in Protege.
-         */
-        VersionedOWLOntology vont = new VersionedOWLOntologyImpl(document, ontology);
-        vont.update(changeHistory);
+        ServerDocument serverDocument = getAdmin().createProject(projectId, projectName, description, owner,
+                Optional.ofNullable(options), Optional.ofNullable(commitBundle));
         
         // Assert the server document
-        assertThat(document, is(notNullValue()));
-        assertThat(document.getServerAddress(), is(URI.create(SERVER_ADDRESS)));
-        assertThat(document.getRegistryPort(), is(REGISTRY_PORT));
-        assertThat(document.getHistoryFile(), is(notNullValue()));
-        assertThat(document.getHistoryFile().length(), is(greaterThan(new Long(0))));
+        assertThat(serverDocument, is(notNullValue()));
+        assertThat(serverDocument.getServerAddress(), is(URI.create(SERVER_ADDRESS)));
+        assertThat(serverDocument.getRegistryPort(), is(REGISTRY_PORT));
+        assertThat(serverDocument.getHistoryFile(), is(notNullValue()));
+        assertThat(serverDocument.getHistoryFile().length(), is(greaterThan(new Long(0))));
         
         // Assert the remote change history
-        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(document);
+        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
         assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
         assertThat(remoteChangeHistory.getBaseRevision(), is(R0));
         assertThat(remoteChangeHistory.getHeadRevision(), is(R1));
         assertThat(remoteChangeHistory.getMetadata().size(), is(1));
         assertThat(remoteChangeHistory.getRevisions().size(), is(1));
         assertThat(remoteChangeHistory.getChangesForRevision(R1).size(), is(945));
-        
-        // Assert the versioned ontology
-        assertThat(vont.getBaseRevision(), is(DocumentRevision.START_REVISION));
-        assertThat(vont.getHeadRevision(), is(DocumentRevision.create(1)));
-        
-        // Assert the local change history. Expected to have the same as remote change history
-        ChangeHistory localChangeHistory = vont.getChangeHistory();
-        assertThat("The local change history should not be empty", !localChangeHistory.isEmpty());
-        assertThat(localChangeHistory.getBaseRevision(), is(R0));
-        assertThat(localChangeHistory.getHeadRevision(), is(R1));
-        assertThat(localChangeHistory.getMetadata().size(), is(1));
-        assertThat(localChangeHistory.getRevisions().size(), is(1));
-        assertThat(localChangeHistory.getChangesForRevision(R1).size(), is(945));
     }
 
     @After

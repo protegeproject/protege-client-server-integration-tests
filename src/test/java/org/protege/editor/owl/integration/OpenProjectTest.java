@@ -5,15 +5,12 @@ import static org.hamcrest.Matchers.is;
 
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
 import org.protege.editor.owl.server.versioning.Commit;
-import org.protege.editor.owl.server.versioning.VersionedOWLOntologyImpl;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
-import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.junit.After;
@@ -39,8 +36,6 @@ import edu.stanford.protege.metaproject.api.UserId;
  */
 public class OpenProjectTest extends BaseTest {
 
-    private VersionedOWLOntology vont;
-
     private ProjectId projectId;
 
     @Before
@@ -53,11 +48,11 @@ public class OpenProjectTest extends BaseTest {
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
         ProjectOptions options = null;
-        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(pizzaOntology());
 
         /*
          * Processing part
          */
+        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(pizzaOntology());
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
         List<OWLOntologyChange> changes = visitor.getChanges();
         RevisionMetadata metadata = new RevisionMetadata(
@@ -66,10 +61,7 @@ public class OpenProjectTest extends BaseTest {
                 getAdmin().getUserInfo().getEmailAddress(),
                 "First commit");
         CommitBundle commitBundle = new CommitBundleImpl(R0, new Commit(metadata, changes));
-        ServerDocument document = getAdmin().createProject(projectId, projectName, description, owner, Optional.ofNullable(options));
-        ChangeHistory changeHistory = getAdmin().commit(projectId, commitBundle);
-        vont = new VersionedOWLOntologyImpl(document, ontology);
-        vont.update(changeHistory);
+        getAdmin().createProject(projectId, projectName, description, owner, Optional.ofNullable(options), Optional.ofNullable(commitBundle));
     }
 
     @Test
@@ -81,8 +73,18 @@ public class OpenProjectTest extends BaseTest {
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
         Client guest = login(guestId, guestPassword);
         
-        ServerDocument serverDocument = guest.openProject(projectId);
-        ChangeHistory changeHistoryFromServer = ChangeUtils.getAllChanges(serverDocument);
+        VersionedOWLOntology vont = guest.openProject(projectId);
+        ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
+        
+        // Assert the remote change history
+        assertThat("The local change history should not be empty", !changeHistoryFromClient.isEmpty());
+        assertThat(changeHistoryFromClient.getBaseRevision(), is(R0));
+        assertThat(changeHistoryFromClient.getHeadRevision(), is(R1));
+        assertThat(changeHistoryFromClient.getMetadata().size(), is(1));
+        assertThat(changeHistoryFromClient.getRevisions().size(), is(1));
+        assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(945));
+        
+        ChangeHistory changeHistoryFromServer = ChangeUtils.getAllChanges(vont.getServerDocument());
         
         // Assert the remote change history
         assertThat("The remote change history should not be empty", !changeHistoryFromServer.isEmpty());
@@ -102,8 +104,8 @@ public class OpenProjectTest extends BaseTest {
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
         Client guest = login(guestId, guestPassword);
         
-        ServerDocument serverDocument = guest.openProject(projectId);
-        OWLOntology ontology = ClientUtils.buildOntology(serverDocument);
+        VersionedOWLOntology vont = guest.openProject(projectId);
+        OWLOntology ontology = vont.getOntology();
         
         // Assert the produced ontology
         OWLOntology originalOntology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(pizzaOntology());
