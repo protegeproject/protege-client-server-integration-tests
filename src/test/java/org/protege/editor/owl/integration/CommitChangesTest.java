@@ -101,7 +101,7 @@ public class CommitChangesTest extends BaseTest {
     }
 
     @Test
-    public void shouldCommitChange() throws Exception {
+    public void shouldCommitAddition() throws Exception {
         VersionedOWLOntology vont = openProjectAsAdmin();
         OWLOntology workingOntology = vont.getOntology();
         
