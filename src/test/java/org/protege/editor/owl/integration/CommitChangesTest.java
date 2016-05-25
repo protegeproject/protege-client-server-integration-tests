@@ -10,6 +10,7 @@ import static org.semanticweb.owlapi.apibinding.OWLFunctionalSyntaxFactory.SubCl
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
 import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
@@ -21,7 +22,6 @@ import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -64,7 +64,7 @@ public class CommitChangesTest extends BaseTest {
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
         ProjectOptions options = null;
-        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(pizzaOntology());
+        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(pizzaOntology());
 
         /*
          * Create a new project
@@ -97,9 +97,12 @@ public class CommitChangesTest extends BaseTest {
         VersionedOWLOntology vont = openProjectAsAdmin();
         OWLOntology workingOntology = vont.getOntology();
         
-        OWLOntologyChange addCustomerDecl = new AddAxiom(workingOntology, Declaration(CUSTOMER));
-        OWLOntologyChange addCustomerSubClassOfDomainConcept = new AddAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT));
-        List<OWLOntologyChange> changes = Lists.newArrayList(addCustomerDecl, addCustomerSubClassOfDomainConcept);
+        /*
+         * Simulates user edits over a working ontology (add axioms)
+         */
+        owlManager.addAxiom(workingOntology, Declaration(CUSTOMER));
+        owlManager.addAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT));
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont);
         
         RevisionMetadata metadata = new RevisionMetadata(
                 getAdmin().getUserInfo().getId(),
@@ -112,7 +115,7 @@ public class CommitChangesTest extends BaseTest {
 
         ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
 
-        // Assert the remote change history
+        // Assert the local change history
         assertThat("The local change history should not be empty", !changeHistoryFromClient.isEmpty());
         assertThat(changeHistoryFromClient.getBaseRevision(), is(R0));
         assertThat(changeHistoryFromClient.getHeadRevision(), is(R2)    );

@@ -9,6 +9,8 @@ import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 
 import org.junit.Before;
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
 
 import java.io.File;
@@ -35,6 +37,8 @@ public abstract class BaseTest {
 
     protected static MetaprojectFactory f = Manager.getFactory();
 
+    protected OWLOntologyManager owlManager;
+
     private Client admin;
 
     protected static final File pizzaOntology() {
@@ -44,6 +48,11 @@ public abstract class BaseTest {
         catch (URISyntaxException e) {
             throw new OWLRuntimeException("File not found", e);
         }
+    }
+
+    @Before
+    public void setup() {
+        owlManager = OWLManager.createOWLOntologyManager();
     }
 
     @Before
