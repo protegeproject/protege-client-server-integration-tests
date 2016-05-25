@@ -6,9 +6,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
-import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
@@ -56,8 +56,7 @@ public class NewProjectTest extends BaseTest {
         /*
          * [NewProjectAction] Compute the initial commit from the input ontology
          */
-        GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
-        List<OWLOntologyChange> changes = visitor.getChanges();
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(ontology);
         RevisionMetadata metadata = new RevisionMetadata(
                 getAdmin().getUserInfo().getId(),
                 getAdmin().getUserInfo().getName(),

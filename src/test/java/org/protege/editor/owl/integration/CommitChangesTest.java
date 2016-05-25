@@ -110,7 +110,7 @@ public class CommitChangesTest extends BaseTest {
          */
         owlManager.addAxiom(workingOntology, Declaration(CUSTOMER));
         owlManager.addAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT));
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont);
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
         
         RevisionMetadata metadata = new RevisionMetadata(
                 getAdmin().getUserInfo().getId(),
@@ -126,7 +126,7 @@ public class CommitChangesTest extends BaseTest {
         // Assert the local change history
         assertThat("The local change history should not be empty", !changeHistoryFromClient.isEmpty());
         assertThat(changeHistoryFromClient.getBaseRevision(), is(R0));
-        assertThat(changeHistoryFromClient.getHeadRevision(), is(R2)    );
+        assertThat(changeHistoryFromClient.getHeadRevision(), is(R2));
         assertThat(changeHistoryFromClient.getMetadata().size(), is(2));
         assertThat(changeHistoryFromClient.getRevisions().size(), is(2));
         assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(945));
@@ -170,7 +170,7 @@ public class CommitChangesTest extends BaseTest {
             }
         }
         owlManager.removeAxioms(workingOntology, axiomsToRemove);
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont);
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
         
         RevisionMetadata metadata = new RevisionMetadata(
                 getAdmin().getUserInfo().getId(),
