@@ -28,6 +28,10 @@ public abstract class BaseTest {
 
     protected static final DocumentRevision R0 = DocumentRevision.START_REVISION;
     protected static final DocumentRevision R1 = DocumentRevision.create(1);
+    protected static final DocumentRevision R2 = DocumentRevision.create(2);
+    protected static final DocumentRevision R3 = DocumentRevision.create(3);
+    protected static final DocumentRevision R4 = DocumentRevision.create(4);
+    protected static final DocumentRevision R5 = DocumentRevision.create(5);
 
     protected static MetaprojectFactory f = Manager.getFactory();
 

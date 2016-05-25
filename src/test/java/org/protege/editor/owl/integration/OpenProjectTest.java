@@ -50,7 +50,7 @@ public class OpenProjectTest extends BaseTest {
         ProjectOptions options = null;
 
         /*
-         * Processing part
+         * Create a new project
          */
         OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(pizzaOntology());
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
