@@ -16,6 +16,7 @@ import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
@@ -107,9 +108,11 @@ public class OpenProjectTest extends BaseTest {
         OWLOntology ontology = vont.getOntology();
         
         // Assert the produced ontology
-        OWLOntology originalOntology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
+        OWLOntology originalOntology = owlManager.getOntology(IRI.create(PizzaOntology.getId()));
+        assertThat(ontology, is(originalOntology));
         assertThat(ontology.getSignature(), is(originalOntology.getSignature()));
         assertThat(ontology.getAxiomCount(), is(originalOntology.getAxiomCount()));
+        assertThat(ontology.getAxioms(), is(originalOntology.getAxioms()));
     }
 
     @After
