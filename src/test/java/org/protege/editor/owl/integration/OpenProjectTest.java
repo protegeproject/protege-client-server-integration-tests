@@ -16,7 +16,6 @@ import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 
@@ -52,7 +51,7 @@ public class OpenProjectTest extends BaseTest {
         /*
          * Create a new project
          */
-        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(pizzaOntology());
+        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(pizzaOntology());
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
         List<OWLOntologyChange> changes = visitor.getChanges();
         RevisionMetadata metadata = new RevisionMetadata(
@@ -108,7 +107,7 @@ public class OpenProjectTest extends BaseTest {
         OWLOntology ontology = vont.getOntology();
         
         // Assert the produced ontology
-        OWLOntology originalOntology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(pizzaOntology());
+        OWLOntology originalOntology = owlManager.loadOntologyFromOntologyDocument(pizzaOntology());
         assertThat(ontology.getSignature(), is(originalOntology.getSignature()));
         assertThat(ontology.getAxiomCount(), is(originalOntology.getAxiomCount()));
     }
