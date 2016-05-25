@@ -5,12 +5,11 @@ import static org.hamcrest.Matchers.is;
 
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ChangeUtils;
+import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
-import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.junit.After;
@@ -48,20 +47,16 @@ public class OpenProjectTest extends BaseTest {
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
         ProjectOptions options = null;
+        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
 
         /*
          * Create a new project
          */
-        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
-        GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
-        List<OWLOntologyChange> changes = visitor.getChanges();
-        RevisionMetadata metadata = new RevisionMetadata(
-                getAdmin().getUserInfo().getId(),
-                getAdmin().getUserInfo().getName(),
-                getAdmin().getUserInfo().getEmailAddress(),
-                "First commit");
-        CommitBundle commitBundle = new CommitBundleImpl(R0, new Commit(metadata, changes));
-        getAdmin().createProject(projectId, projectName, description, owner, Optional.ofNullable(options), Optional.ofNullable(commitBundle));
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(ontology);
+        Commit initialCommit = ClientUtils.createCommit(getAdmin(), "First commit", changes);
+        CommitBundle commitBundle = new CommitBundleImpl(R0, initialCommit);
+        getAdmin().createProject(projectId, projectName, description, owner,
+                Optional.ofNullable(options), Optional.ofNullable(commitBundle));
     }
 
     @Test

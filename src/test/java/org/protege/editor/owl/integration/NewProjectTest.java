@@ -11,7 +11,6 @@ import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 
 import org.junit.After;
@@ -57,12 +56,8 @@ public class NewProjectTest extends BaseTest {
          * [NewProjectAction] Compute the initial commit from the input ontology
          */
         List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(ontology);
-        RevisionMetadata metadata = new RevisionMetadata(
-                getAdmin().getUserInfo().getId(),
-                getAdmin().getUserInfo().getName(),
-                getAdmin().getUserInfo().getEmailAddress(),
-                "First commit");
-        CommitBundle commitBundle = new CommitBundleImpl(R0, new Commit(metadata, changes));
+        Commit initialCommit = ClientUtils.createCommit(getAdmin(), "First commit", changes);
+        CommitBundle commitBundle = new CommitBundleImpl(R0, initialCommit);
         
         /*
          * [NewProjectAction] Call the remote method for creating a new project with an initial commit.

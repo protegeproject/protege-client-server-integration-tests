@@ -13,16 +13,14 @@ import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
-import org.protege.editor.owl.server.util.GetUncommittedChangesVisitor;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.RevisionMetadata;
+import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationSubject;
@@ -36,8 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import com.google.common.collect.Lists;
 
 import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.Name;
@@ -77,14 +73,9 @@ public class CommitChangesTest extends BaseTest {
         /*
          * Create a new project
          */
-        GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
-        List<OWLOntologyChange> changes = visitor.getChanges();
-        RevisionMetadata metadata = new RevisionMetadata(
-                getAdmin().getUserInfo().getId(),
-                getAdmin().getUserInfo().getName(),
-                getAdmin().getUserInfo().getEmailAddress(),
-                "First commit");
-        CommitBundle commitBundle = new CommitBundleImpl(R0, new Commit(metadata, changes));
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(ontology);
+        Commit initialCommit = ClientUtils.createCommit(getAdmin(), "First commit", changes);
+        CommitBundle commitBundle = new CommitBundleImpl(R0, initialCommit);
         getAdmin().createProject(projectId, projectName, description, owner,
                 Optional.ofNullable(options), Optional.ofNullable(commitBundle));
     }
@@ -110,15 +101,23 @@ public class CommitChangesTest extends BaseTest {
          */
         owlManager.addAxiom(workingOntology, Declaration(CUSTOMER));
         owlManager.addAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT));
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
         
-        RevisionMetadata metadata = new RevisionMetadata(
-                getAdmin().getUserInfo().getId(),
-                getAdmin().getUserInfo().getName(),
-                getAdmin().getUserInfo().getEmailAddress(),
-                "Add customer subclass of domain concept");
-        CommitBundle commitBundle = new CommitBundleImpl(vont.getHeadRevision(), new Commit(metadata, changes));
+        /*
+         * Prepare the commit bundle
+         */
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
+        Commit commit = ClientUtils.createCommit(getAdmin(), "Add customer subclass of domain concept", changes);
+        DocumentRevision commitBaseRevision = vont.getHeadRevision();
+        CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
+        
+        /*
+         * Do commit
+         */
         ChangeHistory approvedChanges = getAdmin().commit(projectId, commitBundle);
+        
+        /*
+         * Update local history
+         */
         vont.update(approvedChanges);
 
         ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
@@ -170,15 +169,23 @@ public class CommitChangesTest extends BaseTest {
             }
         }
         owlManager.removeAxioms(workingOntology, axiomsToRemove);
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
         
-        RevisionMetadata metadata = new RevisionMetadata(
-                getAdmin().getUserInfo().getId(),
-                getAdmin().getUserInfo().getName(),
-                getAdmin().getUserInfo().getEmailAddress(),
-                "Remove MeatTopping and its references");
-        CommitBundle commitBundle = new CommitBundleImpl(vont.getHeadRevision(), new Commit(metadata, changes));
+        /*
+         * Prepare the commit bundle
+         */
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
+        Commit commit = ClientUtils.createCommit(getAdmin(), "Remove MeatTopping and its references", changes);
+        DocumentRevision commitBaseRevision = vont.getHeadRevision();
+        CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
+        
+        /*
+         * Do commit
+         */
         ChangeHistory approvedChanges = getAdmin().commit(projectId, commitBundle);
+        
+        /*
+         * Update local history
+         */
         vont.update(approvedChanges);
 
         ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
@@ -209,16 +216,23 @@ public class CommitChangesTest extends BaseTest {
         VersionedOWLOntology vont = openProjectAsGuest();
         OWLOntology workingOntology = vont.getOntology();
         
-        OWLOntologyChange addCustomerDecl = new AddAxiom(workingOntology, Declaration(CUSTOMER));
-        OWLOntologyChange addCustomerSubClassOfDomainConcept = new AddAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT));
-        List<OWLOntologyChange> changes = Lists.newArrayList(addCustomerDecl, addCustomerSubClassOfDomainConcept);
+        /*
+         * Simulates user edits over a working ontology (add axioms)
+         */
+        owlManager.addAxiom(workingOntology, Declaration(CUSTOMER));
+        owlManager.addAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT));
         
-        RevisionMetadata metadata = new RevisionMetadata(
-                guest.getUserInfo().getId(),
-                guest.getUserInfo().getName(),
-                guest.getUserInfo().getEmailAddress(),
-                "Add customer subclass of domain concept");
-        CommitBundle commitBundle = new CommitBundleImpl(vont.getHeadRevision(), new Commit(metadata, changes));
+        /*
+         * Prepare the commit bundle
+         */
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
+        Commit commit = ClientUtils.createCommit(guest, "Add customer subclass of domain concept", changes);
+        DocumentRevision commitBaseRevision = vont.getHeadRevision();
+        CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
+        
+        /*
+         * Do commit
+         */
         guest.commit(projectId, commitBundle);
     }
 
