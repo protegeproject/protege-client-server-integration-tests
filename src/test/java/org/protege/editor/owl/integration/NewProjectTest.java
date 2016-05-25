@@ -51,7 +51,7 @@ public class NewProjectTest extends BaseTest {
         /*
          * [GUI] The input target ontology
          */
-        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(pizzaOntology());
+        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
 
         /*
          * [NewProjectAction] Compute the initial commit from the input ontology

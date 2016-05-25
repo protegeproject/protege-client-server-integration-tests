@@ -52,7 +52,7 @@ import edu.stanford.protege.metaproject.api.UserId;
  */
 public class CommitChangesTest extends BaseTest {
 
-    private static final String ONTOLOGY_ID = "http://www.co-ode.org/ontologies/pizza/pizza.owl#";
+    private static final String ONTOLOGY_ID = PizzaOntology.getId() + "#";
 
     private static final OWLClass DOMAIN_CONCEPT = Class(IRI(ONTOLOGY_ID, "DomainConcept"));
     private static final OWLClass CUSTOMER = Class(IRI(ONTOLOGY_ID, "Customer"));
@@ -72,7 +72,7 @@ public class CommitChangesTest extends BaseTest {
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
         ProjectOptions options = null;
-        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(pizzaOntology());
+        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
 
         /*
          * Create a new project

@@ -51,7 +51,7 @@ public class OpenProjectTest extends BaseTest {
         /*
          * Create a new project
          */
-        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(pizzaOntology());
+        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
         GetUncommittedChangesVisitor visitor = new GetUncommittedChangesVisitor(ontology);
         List<OWLOntologyChange> changes = visitor.getChanges();
         RevisionMetadata metadata = new RevisionMetadata(
@@ -107,7 +107,7 @@ public class OpenProjectTest extends BaseTest {
         OWLOntology ontology = vont.getOntology();
         
         // Assert the produced ontology
-        OWLOntology originalOntology = owlManager.loadOntologyFromOntologyDocument(pizzaOntology());
+        OWLOntology originalOntology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
         assertThat(ontology.getSignature(), is(originalOntology.getSignature()));
         assertThat(ontology.getAxiomCount(), is(originalOntology.getAxiomCount()));
     }

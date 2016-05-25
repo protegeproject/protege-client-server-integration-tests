@@ -41,12 +41,19 @@ public abstract class BaseTest {
 
     private Client admin;
 
-    protected static final File pizzaOntology() {
-        try {
-            return new File(NewProjectTest.class.getResource("/pizza.owl").toURI());
+    protected static class PizzaOntology {
+
+        static final String getId() {
+            return "http://www.co-ode.org/ontologies/pizza/pizza.owl";
         }
-        catch (URISyntaxException e) {
-            throw new OWLRuntimeException("File not found", e);
+
+        static final File getResource() {
+            try {
+                return new File(NewProjectTest.class.getResource("/pizza.owl").toURI());
+            }
+            catch (URISyntaxException e) {
+                throw new OWLRuntimeException("File not found", e);
+            }
         }
     }
 
