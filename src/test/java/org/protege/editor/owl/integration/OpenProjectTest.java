@@ -10,11 +10,13 @@ import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -47,7 +49,7 @@ public class OpenProjectTest extends BaseTest {
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
         ProjectOptions options = null;
-        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
+        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(PizzaOntology.getResource());
 
         /*
          * Create a new project
@@ -68,7 +70,8 @@ public class OpenProjectTest extends BaseTest {
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
         Client guest = login(guestId, guestPassword);
         
-        VersionedOWLOntology vont = guest.openProject(projectId);
+        ServerDocument serverDocument = guest.openProject(projectId);
+        VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
         ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
         
         // Assert the remote change history
@@ -99,7 +102,8 @@ public class OpenProjectTest extends BaseTest {
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
         Client guest = login(guestId, guestPassword);
         
-        VersionedOWLOntology vont = guest.openProject(projectId);
+        ServerDocument serverDocument = guest.openProject(projectId);
+        VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
         OWLOntology ontology = vont.getOntology();
         
         // Assert the produced ontology

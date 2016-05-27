@@ -16,11 +16,13 @@ import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationSubject;
@@ -68,7 +70,7 @@ public class CommitChangesTest extends BaseTest {
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
         ProjectOptions options = null;
-        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
+        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(PizzaOntology.getResource());
 
         /*
          * Create a new project
@@ -81,14 +83,16 @@ public class CommitChangesTest extends BaseTest {
     }
 
     private VersionedOWLOntology openProjectAsAdmin() throws Exception {
-        return getAdmin().openProject(projectId);
+        ServerDocument serverDocument = getAdmin().openProject(projectId);
+        return ClientUtils.buildVersionedOntology(serverDocument, owlManager);
     }
 
     private VersionedOWLOntology openProjectAsGuest() throws Exception {
         UserId guestId = f.getUserId("guest");
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
         guest = login(guestId, guestPassword);
-        return guest.openProject(projectId);
+        ServerDocument serverDocument = guest.openProject(projectId);
+        return ClientUtils.buildVersionedOntology(serverDocument, owlManager);
     }
 
     @Test
