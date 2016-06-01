@@ -113,6 +113,9 @@ public class LargeProjectTest extends BaseTest {
         assertThat(changeHistoryFromServer.getMetadata().size(), is(1));
         assertThat(changeHistoryFromServer.getRevisions().size(), is(1));
         //assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(945));
+        
+        assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), 
+        		is(changeHistoryFromServer.getChangesForRevision(R1).size()));
     }
 
     
