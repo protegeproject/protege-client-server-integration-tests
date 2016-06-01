@@ -9,3 +9,6 @@ META-INF/
 target/
 release.properties
 /bin/
+
+# OSX
+.DS_Store

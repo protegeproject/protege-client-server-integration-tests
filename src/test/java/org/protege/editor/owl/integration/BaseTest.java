@@ -56,6 +56,22 @@ public abstract class BaseTest {
             }
         }
     }
+    
+    protected static class LargeOntology {
+
+        static final String getId() {
+            return "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl";
+        }
+
+        static final File getResource() {
+            try {
+                return new File(NewProjectTest.class.getResource("/thesaurus.owl").toURI());
+            }
+            catch (URISyntaxException e) {
+                throw new OWLRuntimeException("File not found", e);
+            }
+        }
+    }
 
     @Before
     public void setup() {
