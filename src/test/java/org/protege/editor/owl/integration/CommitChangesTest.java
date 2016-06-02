@@ -9,6 +9,7 @@ import static org.semanticweb.owlapi.apibinding.OWLFunctionalSyntaxFactory.SubCl
 
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.api.exception.ClientRequestException;
+import org.protege.editor.owl.server.api.exception.OperationNotAllowedException;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
@@ -21,7 +22,9 @@ import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
@@ -59,6 +62,9 @@ public class CommitChangesTest extends BaseTest {
     private ProjectId projectId;
 
     private Client guest;
+
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void createProject() throws Exception {
@@ -215,7 +221,7 @@ public class CommitChangesTest extends BaseTest {
         assertThat(changeHistoryFromServer.getChangesForRevision(R2).size(), is(16));
     }
 
-    @Test(expected=ClientRequestException.class)
+    @Test
     public void shouldNotCommitChange() throws Exception {
         VersionedOWLOntology vont = openProjectAsGuest();
         OWLOntology workingOntology = vont.getOntology();
@@ -233,6 +239,10 @@ public class CommitChangesTest extends BaseTest {
         Commit commit = ClientUtils.createCommit(guest, "Add customer subclass of domain concept", changes);
         DocumentRevision commitBaseRevision = vont.getHeadRevision();
         CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
+        
+        thrown.expect(ClientRequestException.class);
+        thrown.expectCause(new CauseMatcher(OperationNotAllowedException.class,
+                "User has no permission for 'Add axiom' operation"));
         
         /*
          * Do commit
