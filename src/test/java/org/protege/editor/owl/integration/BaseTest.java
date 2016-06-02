@@ -1,5 +1,12 @@
 package org.protege.editor.owl.integration;
 
+import java.io.File;
+import java.net.URISyntaxException;
+import java.util.UUID;
+
+import org.hamcrest.Description;
+import org.hamcrest.TypeSafeMatcher;
+import org.junit.Before;
 import org.protege.editor.owl.client.LocalClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.ui.DefaultUserAuthenticator;
@@ -7,15 +14,9 @@ import org.protege.editor.owl.client.util.ServerUtils;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
-
-import org.junit.Before;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
-
-import java.io.File;
-import java.net.URISyntaxException;
-import java.util.UUID;
 
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
@@ -100,5 +101,30 @@ public abstract class BaseTest {
     protected static String uuid8char() {
         final UUID uuid = UUID.randomUUID();
         return uuid.toString().replace("-", "").substring(0, 8);
+    }
+
+    protected static class CauseMatcher extends TypeSafeMatcher<Throwable> {
+        
+        private final Class<? extends Throwable> type;
+        private final String expectedMessage;
+     
+        public CauseMatcher(Class<? extends Throwable> type, String expectedMessage) {
+            this.type = type;
+            this.expectedMessage = expectedMessage;
+        }
+     
+        @Override
+        protected boolean matchesSafely(Throwable item) {
+            return item.getClass().isAssignableFrom(type)
+                    && item.getMessage().contains(expectedMessage);
+        }
+     
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("expects type ")
+                    .appendValue(type)
+                    .appendText(" and a message ")
+                    .appendValue(expectedMessage);
+        }
     }
 }
