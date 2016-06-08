@@ -41,8 +41,8 @@ public class NewProjectTest extends BaseTest {
         /*
          * [GUI] The input project properties
          */
-        projectId = f.getProjectId("pizza");
-        Name projectName = f.getName("Pizza Project" );
+        projectId = f.getProjectId("pizza-" + System.currentTimeMillis()); // currentTimeMilis() for uniqueness
+        Name projectName = f.getName("Pizza Project");
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
         ProjectOptions options = null;
