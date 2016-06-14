@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.server.api.CommitBundle;
@@ -74,7 +75,7 @@ public class NewProjectTest extends BaseTest {
         assertThat(serverDocument.getHistoryFile().length(), is(greaterThan(new Long(0))));
         
         // Assert the remote change history
-        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
+        ChangeHistory remoteChangeHistory = ((LocalHttpClient) getAdmin()).getAllChanges(serverDocument);
         assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
         assertThat(remoteChangeHistory.getBaseRevision(), is(R0));
         assertThat(remoteChangeHistory.getHeadRevision(), is(R1));

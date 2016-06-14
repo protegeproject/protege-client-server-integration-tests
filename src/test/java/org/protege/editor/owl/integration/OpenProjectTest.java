@@ -3,6 +3,7 @@ package org.protege.editor.owl.integration;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
@@ -71,7 +72,7 @@ public class OpenProjectTest extends BaseTest {
         Client guest = login(guestId, guestPassword);
         
         ServerDocument serverDocument = guest.openProject(projectId);
-        VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
+        VersionedOWLOntology vont = ((LocalHttpClient) guest).buildVersionedOntology(serverDocument, owlManager, projectId);
         ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
         
         // Assert the remote change history
@@ -82,7 +83,7 @@ public class OpenProjectTest extends BaseTest {
         assertThat(changeHistoryFromClient.getRevisions().size(), is(1));
         assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(945));
         
-        ChangeHistory changeHistoryFromServer = ChangeUtils.getAllChanges(vont.getServerDocument());
+        ChangeHistory changeHistoryFromServer = ((LocalHttpClient) guest).getAllChanges(vont.getServerDocument());
         
         // Assert the remote change history
         assertThat("The remote change history should not be empty", !changeHistoryFromServer.isEmpty());
@@ -103,7 +104,7 @@ public class OpenProjectTest extends BaseTest {
         Client guest = login(guestId, guestPassword);
         
         ServerDocument serverDocument = guest.openProject(projectId);
-        VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
+        VersionedOWLOntology vont = ((LocalHttpClient) guest).buildVersionedOntology(serverDocument, owlManager, projectId);
         OWLOntology ontology = vont.getOntology();
         
         // Assert the produced ontology

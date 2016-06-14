@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Test;
+import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
@@ -40,7 +41,7 @@ public class LargeProjectTest extends BaseTest {
         /*
          * [GUI] The input project properties
          */
-        projectId = f.getProjectId("BiomedGT");
+        projectId = f.getProjectId("BiomedGT-" + System.currentTimeMillis());
         Name projectName = f.getName("NCI Thesaurus" );
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
@@ -74,7 +75,7 @@ public class LargeProjectTest extends BaseTest {
         assertThat(serverDocument.getHistoryFile().length(), is(greaterThan(new Long(0))));
         
         // Assert the remote change history
-        ChangeHistory remoteChangeHistory = ChangeUtils.getAllChanges(serverDocument);
+        ChangeHistory remoteChangeHistory = ((LocalHttpClient) getAdmin()).getAllChanges(serverDocument);
         assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
         assertThat(remoteChangeHistory.getBaseRevision(), is(R0));
         assertThat(remoteChangeHistory.getHeadRevision(), is(R1));
@@ -93,7 +94,7 @@ public class LargeProjectTest extends BaseTest {
         Client guest = login(guestId, guestPassword);
         
         ServerDocument serverDocument = guest.openProject(projectId);
-        VersionedOWLOntology vont = ClientUtils.buildVersionedOntology(serverDocument, owlManager);
+        VersionedOWLOntology vont = ((LocalHttpClient) guest).buildVersionedOntology(serverDocument, owlManager, projectId);
         ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
         
         // Assert the remote change history
@@ -104,7 +105,7 @@ public class LargeProjectTest extends BaseTest {
         assertThat(changeHistoryFromClient.getRevisions().size(), is(1));
         //assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(945));
         
-        ChangeHistory changeHistoryFromServer = ChangeUtils.getAllChanges(vont.getServerDocument());
+        ChangeHistory changeHistoryFromServer = ((LocalHttpClient) guest).getAllChanges(vont.getServerDocument());
         
         // Assert the remote change history
         assertThat("The remote change history should not be empty", !changeHistoryFromServer.isEmpty());
@@ -116,7 +117,11 @@ public class LargeProjectTest extends BaseTest {
         
         assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), 
         		is(changeHistoryFromServer.getChangesForRevision(R1).size()));
+        
+        getAdmin().deleteProject(projectId, true);
     }
+    
+   
 
     
 

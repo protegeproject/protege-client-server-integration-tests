@@ -7,16 +7,20 @@ import java.util.UUID;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
-import org.protege.editor.owl.client.LocalClient;
+import org.junit.BeforeClass;
+import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.LocalRMIClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.ui.DefaultUserAuthenticator;
 import org.protege.editor.owl.client.util.ServerUtils;
+import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
+import org.junit.AfterClass;
 
 import edu.stanford.protege.metaproject.Manager;
 import edu.stanford.protege.metaproject.api.AuthToken;
@@ -26,7 +30,7 @@ import edu.stanford.protege.metaproject.api.UserId;
 
 public abstract class BaseTest {
 
-    protected static final String SERVER_ADDRESS = "rmi://localhost:5100";
+    protected static final String SERVER_ADDRESS = "http://localhost:8080";
     protected static final int REGISTRY_PORT = 5200;
 
     protected static final DocumentRevision R0 = DocumentRevision.START_REVISION;
@@ -39,6 +43,8 @@ public abstract class BaseTest {
     protected static MetaprojectFactory f = Manager.getFactory();
 
     protected OWLOntologyManager owlManager;
+    
+    //private static HTTPServer httpServer = null;
 
     private Client admin;
 
@@ -85,17 +91,26 @@ public abstract class BaseTest {
         PlainPassword password = f.getPlainPassword("rootpwd");
         admin = login(userId, password);
     }
+    
+    /**
+    @BeforeClass
+    public static void startServer() throws Exception {
+    	File cfg = new File(BaseTest.class.getResource("/server-configuration.json").toURI());
+    	
+    	httpServer = new HTTPServer(cfg);
+    	httpServer.start();
+    	
+    }
+    **/
+
 
     protected Client getAdmin() {
         return admin;
     }
 
     protected static Client login(UserId userId, PlainPassword password) throws Exception {
-        RemoteLoginService loginService = (RemoteLoginService) ServerUtils
-                .getRemoteService(SERVER_ADDRESS, REGISTRY_PORT, RmiLoginService.LOGIN_SERVICE);
-        DefaultUserAuthenticator authenticator = new DefaultUserAuthenticator(loginService);
-        AuthToken authToken = authenticator.hasValidCredentials(userId, password);
-        return new LocalClient(authToken, SERVER_ADDRESS, REGISTRY_PORT);
+        
+        return new LocalHttpClient(userId.get(), password.getPassword(), SERVER_ADDRESS);
     }
 
     protected static String uuid8char() {
@@ -127,4 +142,12 @@ public abstract class BaseTest {
                     .appendValue(expectedMessage);
         }
     }
+    
+    /**
+    @AfterClass
+    public static void stopServer() throws Exception {
+    	httpServer.stop();
+    	
+    }
+    **/
 }
