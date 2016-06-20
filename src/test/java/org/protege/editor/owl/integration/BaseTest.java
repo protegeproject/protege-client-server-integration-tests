@@ -44,9 +44,9 @@ public abstract class BaseTest {
 
     protected OWLOntologyManager owlManager;
     
-    //private static HTTPServer httpServer = null;
+    private static HTTPServer httpServer = null;
 
-    private Client admin;
+    private LocalHttpClient admin;
 
     protected static class PizzaOntology {
 
@@ -92,23 +92,26 @@ public abstract class BaseTest {
         admin = login(userId, password);
     }
     
-    /**
+   
     @BeforeClass
     public static void startServer() throws Exception {
-    	File cfg = new File(BaseTest.class.getResource("/server-configuration.json").toURI());
+    	String cfn = "server-configuration.json";
     	
-    	httpServer = new HTTPServer(cfg);
+    	File f = new File(cfn);
+    	boolean bool = f.exists();
+    	
+    	httpServer = new HTTPServer(cfn);
     	httpServer.start();
     	
     }
-    **/
+    
 
 
-    protected Client getAdmin() {
+    protected LocalHttpClient getAdmin() {
         return admin;
     }
 
-    protected static Client login(UserId userId, PlainPassword password) throws Exception {
+    protected static LocalHttpClient login(UserId userId, PlainPassword password) throws Exception {
         
         return new LocalHttpClient(userId.get(), password.getPassword(), SERVER_ADDRESS);
     }
@@ -143,11 +146,11 @@ public abstract class BaseTest {
         }
     }
     
-    /**
+
     @AfterClass
     public static void stopServer() throws Exception {
     	httpServer.stop();
-    	
+
     }
-    **/
+    
 }

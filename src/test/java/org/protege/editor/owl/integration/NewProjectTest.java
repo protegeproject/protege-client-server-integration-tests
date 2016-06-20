@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.integration.BaseTest.PizzaOntology;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;
@@ -25,6 +26,7 @@ import java.util.Optional;
 
 import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.Name;
+import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.ProjectOptions;
 import edu.stanford.protege.metaproject.api.UserId;
@@ -46,26 +48,12 @@ public class NewProjectTest extends BaseTest {
         Name projectName = f.getName("Pizza Project");
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
-        ProjectOptions options = null;
         
-        /*
-         * [GUI] The input target ontology
-         */
-        OWLOntology ontology = owlManager.loadOntologyFromOntologyDocument(PizzaOntology.getResource());
-
-        /*
-         * [NewProjectAction] Compute the initial commit from the input ontology
-         */
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(ontology);
-        Commit initialCommit = ClientUtils.createCommit(getAdmin(), "First commit", changes);
-        CommitBundle commitBundle = new CommitBundleImpl(R0, initialCommit);
+        Optional<ProjectOptions> options = Optional.ofNullable(null);
         
-        /*
-         * [NewProjectAction] Call the remote method for creating a new project with an initial commit.
-         * The method will return a ServerDocument which contains the remote resource information.
-         */
-        ServerDocument serverDocument = getAdmin().createProject(projectId, projectName, description, owner,
-                Optional.ofNullable(options), Optional.ofNullable(commitBundle));
+        Project proj = f.getProject(projectId, projectName, description, PizzaOntology.getResource(), owner, options);
+       
+        ServerDocument serverDocument = getAdmin().createProject(proj);
         
         // Assert the server document
         assertThat(serverDocument, is(notNullValue()));
@@ -75,13 +63,13 @@ public class NewProjectTest extends BaseTest {
         assertThat(serverDocument.getHistoryFile().length(), is(greaterThan(new Long(0))));
         
         // Assert the remote change history
-        ChangeHistory remoteChangeHistory = ((LocalHttpClient) getAdmin()).getAllChanges(serverDocument);
+        ChangeHistory remoteChangeHistory = getAdmin().getAllChanges(serverDocument);
         assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
         assertThat(remoteChangeHistory.getBaseRevision(), is(R0));
         assertThat(remoteChangeHistory.getHeadRevision(), is(R1));
         assertThat(remoteChangeHistory.getMetadata().size(), is(1));
         assertThat(remoteChangeHistory.getRevisions().size(), is(1));
-        assertThat(remoteChangeHistory.getChangesForRevision(R1).size(), is(945));
+        assertThat(remoteChangeHistory.getChangesForRevision(R1).size(), is(0));
     }
 
     @After

@@ -44,6 +44,7 @@ import java.util.Set;
 import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.PlainPassword;
+import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.ProjectOptions;
 import edu.stanford.protege.metaproject.api.UserId;
@@ -62,7 +63,7 @@ public class CommitChangesTest extends BaseTest {
 
     private ProjectId projectId;
 
-    private Client guest;
+    private LocalHttpClient guest;
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -76,22 +77,16 @@ public class CommitChangesTest extends BaseTest {
         Name projectName = f.getName("Pizza Project");
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
-        ProjectOptions options = null;
-        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(PizzaOntology.getResource());
-
-        /*
-         * Create a new project
-         */
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(ontology);
-        Commit initialCommit = ClientUtils.createCommit(getAdmin(), "First commit", changes);
-        CommitBundle commitBundle = new CommitBundleImpl(R0, initialCommit);
-        getAdmin().createProject(projectId, projectName, description, owner,
-                Optional.ofNullable(options), Optional.ofNullable(commitBundle));
+        Optional<ProjectOptions> options = Optional.ofNullable(null);
+        
+        Project proj = f.getProject(projectId, projectName, description, PizzaOntology.getResource(), owner, options);
+       
+        getAdmin().createProject(proj);
     }
 
     private VersionedOWLOntology openProjectAsAdmin() throws Exception {
         ServerDocument serverDocument = getAdmin().openProject(projectId);
-        return ((LocalHttpClient) getAdmin()).buildVersionedOntology(serverDocument, owlManager, projectId);
+        return getAdmin().buildVersionedOntology(serverDocument, owlManager, projectId);
     }
 
     private VersionedOWLOntology openProjectAsGuest() throws Exception {
@@ -99,7 +94,7 @@ public class CommitChangesTest extends BaseTest {
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
         guest = login(guestId, guestPassword);
         ServerDocument serverDocument = guest.openProject(projectId);
-        return ((LocalHttpClient) guest).buildVersionedOntology(serverDocument, owlManager, projectId);
+        return guest.buildVersionedOntology(serverDocument, owlManager, projectId);
     }
 
     @Test
@@ -150,7 +145,7 @@ public class CommitChangesTest extends BaseTest {
         assertThat(changeHistoryFromServer.getHeadRevision(), is(R2));
         assertThat(changeHistoryFromServer.getMetadata().size(), is(2));
         assertThat(changeHistoryFromServer.getRevisions().size(), is(2));
-        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(945));
+        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(0));
         assertThat(changeHistoryFromServer.getChangesForRevision(R2).size(), is(2));
     }
 
@@ -218,7 +213,7 @@ public class CommitChangesTest extends BaseTest {
         assertThat(changeHistoryFromServer.getHeadRevision(), is(R2));
         assertThat(changeHistoryFromServer.getMetadata().size(), is(2));
         assertThat(changeHistoryFromServer.getRevisions().size(), is(2));
-        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(945));
+        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(0));
         assertThat(changeHistoryFromServer.getChangesForRevision(R2).size(), is(16));
     }
 

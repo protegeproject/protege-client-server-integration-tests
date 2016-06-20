@@ -16,10 +16,8 @@
           "mp-guest"
         ]
       }
-      
     },
     "users": [
-     
       {
         "id": "guest",
         "name": "Guest User",
@@ -363,7 +361,6 @@
     ]
   },
   "authentication": [
-    
     {
       "userId": "guest",
       "password": "4e39216f3fe3bba1716b0b6a88f71d49fa4454835e09d3a9",

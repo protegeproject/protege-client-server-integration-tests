@@ -7,6 +7,7 @@ import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
+import org.protege.editor.owl.integration.BaseTest.PizzaOntology;
 import org.protege.editor.owl.server.api.CommitBundle;
 import org.protege.editor.owl.server.policy.CommitBundleImpl;
 import org.protege.editor.owl.server.versioning.Commit;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.Name;
 import edu.stanford.protege.metaproject.api.PlainPassword;
+import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.ProjectOptions;
 import edu.stanford.protege.metaproject.api.UserId;
@@ -49,17 +51,11 @@ public class OpenProjectTest extends BaseTest {
         Name projectName = f.getName("Pizza Project");
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
         UserId owner = f.getUserId("root");
-        ProjectOptions options = null;
-        OWLOntology ontology = OWLManager.createOWLOntologyManager().loadOntologyFromOntologyDocument(PizzaOntology.getResource());
-
-        /*
-         * Create a new project
-         */
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(ontology);
-        Commit initialCommit = ClientUtils.createCommit(getAdmin(), "First commit", changes);
-        CommitBundle commitBundle = new CommitBundleImpl(R0, initialCommit);
-        getAdmin().createProject(projectId, projectName, description, owner,
-                Optional.ofNullable(options), Optional.ofNullable(commitBundle));
+        Optional<ProjectOptions> options = Optional.ofNullable(null);
+        
+        Project proj = f.getProject(projectId, projectName, description, PizzaOntology.getResource(), owner, options);
+       
+        getAdmin().createProject(proj);
     }
 
     @Test
@@ -69,10 +65,10 @@ public class OpenProjectTest extends BaseTest {
          */
         UserId guestId = f.getUserId("guest");
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
-        Client guest = login(guestId, guestPassword);
+        LocalHttpClient guest = login(guestId, guestPassword);
         
         ServerDocument serverDocument = guest.openProject(projectId);
-        VersionedOWLOntology vont = ((LocalHttpClient) guest).buildVersionedOntology(serverDocument, owlManager, projectId);
+        VersionedOWLOntology vont = guest.buildVersionedOntology(serverDocument, owlManager, projectId);
         ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
         
         // Assert the remote change history
@@ -91,7 +87,7 @@ public class OpenProjectTest extends BaseTest {
         assertThat(changeHistoryFromServer.getHeadRevision(), is(R1));
         assertThat(changeHistoryFromServer.getMetadata().size(), is(1));
         assertThat(changeHistoryFromServer.getRevisions().size(), is(1));
-        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(945));
+        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(0));
     }
 
     @Test
