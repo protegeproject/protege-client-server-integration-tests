@@ -58,7 +58,6 @@ public class NewProjectTest extends BaseTest {
         // Assert the server document
         assertThat(serverDocument, is(notNullValue()));
         assertThat(serverDocument.getServerAddress(), is(URI.create(SERVER_ADDRESS)));
-        assertThat(serverDocument.getRegistryPort(), is(REGISTRY_PORT));
         assertThat(serverDocument.getHistoryFile(), is(notNullValue()));
         assertThat(serverDocument.getHistoryFile().length(), is(greaterThan(new Long(0))));
         

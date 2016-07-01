@@ -13,3 +13,6 @@ release.properties
 # OSX
 .DS_Store
 Thesaurus.owl
+
+# generated artifacts
+*-snapshot

@@ -31,7 +31,6 @@ import edu.stanford.protege.metaproject.api.UserId;
 public abstract class BaseTest {
 
     protected static final String SERVER_ADDRESS = "http://localhost:8080";
-    protected static final int REGISTRY_PORT = 5200;
 
     protected static final DocumentRevision R0 = DocumentRevision.START_REVISION;
     protected static final DocumentRevision R1 = DocumentRevision.create(1);

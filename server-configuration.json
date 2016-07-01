@@ -1,7 +1,6 @@
 {
   "host": {
-    "uri": "http://localhost:8080",
-    "secondaryPort": "5200"
+    "uri": "http://localhost:8080"
   },
   "root": "root/data",
   "metaproject": {
@@ -29,9 +28,7 @@
         "emailAddress": ""
       }
     ],
-    "projects": [
-     
-    ],
+    "projects": [],
     "roles": [
       {
         "id": "mp-admin",
