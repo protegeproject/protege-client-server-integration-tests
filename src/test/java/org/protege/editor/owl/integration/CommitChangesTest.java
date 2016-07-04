@@ -27,6 +27,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotationAssertionAxiom;
 import org.semanticweb.owlapi.model.OWLAnnotationSubject;
@@ -35,7 +36,9 @@ import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
+import org.semanticweb.owlapi.model.RemoveAxiom;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -105,13 +108,20 @@ public class CommitChangesTest extends BaseTest {
         /*
          * Simulates user edits over a working ontology (add axioms)
          */
-        owlManager.addAxiom(workingOntology, Declaration(CUSTOMER));
-        owlManager.addAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT));
+        List<OWLOntologyChange> cs = new ArrayList<OWLOntologyChange>();
+        cs.add(new AddAxiom(workingOntology, Declaration(CUSTOMER)));
+        cs.add(new AddAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT)));
+        
+        owlManager.applyChanges(cs);
+        
+        histManager.logChanges(cs);
+        
+        
         
         /*
          * Prepare the commit bundle
          */
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(histManager, vont.getOntology(), vont.getChangeHistory());
         Commit commit = ClientUtils.createCommit(getAdmin(), "Add customer subclass of domain concept", changes);
         DocumentRevision commitBaseRevision = vont.getHeadRevision();
         CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
@@ -131,22 +141,20 @@ public class CommitChangesTest extends BaseTest {
         // Assert the local change history
         assertThat("The local change history should not be empty", !changeHistoryFromClient.isEmpty());
         assertThat(changeHistoryFromClient.getBaseRevision(), is(R0));
-        assertThat(changeHistoryFromClient.getHeadRevision(), is(R2));
-        assertThat(changeHistoryFromClient.getMetadata().size(), is(2));
-        assertThat(changeHistoryFromClient.getRevisions().size(), is(2));
-        assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(945));
-        assertThat(changeHistoryFromClient.getChangesForRevision(R2).size(), is(2));
+        assertThat(changeHistoryFromClient.getHeadRevision(), is(R1));
+        assertThat(changeHistoryFromClient.getMetadata().size(), is(1));
+        assertThat(changeHistoryFromClient.getRevisions().size(), is(1));
+        assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(2));
         
         ChangeHistory changeHistoryFromServer = ((LocalHttpClient)getAdmin()).getAllChanges(vont.getServerDocument());
         
         // Assert the remote change history
         assertThat("The remote change history should not be empty", !changeHistoryFromServer.isEmpty());
         assertThat(changeHistoryFromServer.getBaseRevision(), is(R0));
-        assertThat(changeHistoryFromServer.getHeadRevision(), is(R2));
-        assertThat(changeHistoryFromServer.getMetadata().size(), is(2));
-        assertThat(changeHistoryFromServer.getRevisions().size(), is(2));
-        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(0));
-        assertThat(changeHistoryFromServer.getChangesForRevision(R2).size(), is(2));
+        assertThat(changeHistoryFromServer.getHeadRevision(), is(R1));
+        assertThat(changeHistoryFromServer.getMetadata().size(), is(1));
+        assertThat(changeHistoryFromServer.getRevisions().size(), is(1));
+        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(2));
     }
 
     @Test
@@ -176,10 +184,18 @@ public class CommitChangesTest extends BaseTest {
         }
         owlManager.removeAxioms(workingOntology, axiomsToRemove);
         
+        List<OWLOntologyChange> cs = new ArrayList<OWLOntologyChange>();
+        for (OWLAxiom ax : axiomsToRemove) {
+        	cs.add(new RemoveAxiom(workingOntology, ax));
+        	
+        }
+        
+        histManager.logChanges(cs);
+        
         /*
          * Prepare the commit bundle
          */
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(histManager, vont.getOntology(), vont.getChangeHistory());
         Commit commit = ClientUtils.createCommit(getAdmin(), "Remove MeatTopping and its references", changes);
         DocumentRevision commitBaseRevision = vont.getHeadRevision();
         CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
@@ -199,22 +215,20 @@ public class CommitChangesTest extends BaseTest {
         // Assert the local change history
         assertThat("The local change history should not be empty", !changeHistoryFromClient.isEmpty());
         assertThat(changeHistoryFromClient.getBaseRevision(), is(R0));
-        assertThat(changeHistoryFromClient.getHeadRevision(), is(R2));
-        assertThat(changeHistoryFromClient.getMetadata().size(), is(2));
-        assertThat(changeHistoryFromClient.getRevisions().size(), is(2));
-        assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(945));
-        assertThat(changeHistoryFromClient.getChangesForRevision(R2).size(), is(16));
+        assertThat(changeHistoryFromClient.getHeadRevision(), is(R1));
+        assertThat(changeHistoryFromClient.getMetadata().size(), is(1));
+        assertThat(changeHistoryFromClient.getRevisions().size(), is(1));
+        assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(16));
         
         ChangeHistory changeHistoryFromServer = ((LocalHttpClient)getAdmin()).getAllChanges(vont.getServerDocument());
         
         // Assert the remote change history
         assertThat("The remote change history should not be empty", !changeHistoryFromServer.isEmpty());
         assertThat(changeHistoryFromServer.getBaseRevision(), is(R0));
-        assertThat(changeHistoryFromServer.getHeadRevision(), is(R2));
-        assertThat(changeHistoryFromServer.getMetadata().size(), is(2));
-        assertThat(changeHistoryFromServer.getRevisions().size(), is(2));
-        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(0));
-        assertThat(changeHistoryFromServer.getChangesForRevision(R2).size(), is(16));
+        assertThat(changeHistoryFromServer.getHeadRevision(), is(R1));
+        assertThat(changeHistoryFromServer.getMetadata().size(), is(1));
+        assertThat(changeHistoryFromServer.getRevisions().size(), is(1));
+        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(16));
     }
 
     @Test
@@ -225,13 +239,19 @@ public class CommitChangesTest extends BaseTest {
         /*
          * Simulates user edits over a working ontology (add axioms)
          */
-        owlManager.addAxiom(workingOntology, Declaration(CUSTOMER));
-        owlManager.addAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT));
+        List<OWLOntologyChange> cs = new ArrayList<OWLOntologyChange>();
+        cs.add(new AddAxiom(workingOntology, Declaration(CUSTOMER)));
+        cs.add(new AddAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT)));
+        
+        owlManager.applyChanges(cs);
+        
+        histManager.logChanges(cs);
+       
         
         /*
          * Prepare the commit bundle
          */
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
+        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(histManager, vont.getOntology(), vont.getChangeHistory());
         Commit commit = ClientUtils.createCommit(guest, "Add customer subclass of domain concept", changes);
         DocumentRevision commitBaseRevision = vont.getHeadRevision();
         CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);

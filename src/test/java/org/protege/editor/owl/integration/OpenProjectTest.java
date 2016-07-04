@@ -72,22 +72,20 @@ public class OpenProjectTest extends BaseTest {
         ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
         
         // Assert the remote change history
-        assertThat("The local change history should not be empty", !changeHistoryFromClient.isEmpty());
+        assertThat("The local change history should be empty", changeHistoryFromClient.isEmpty());
         assertThat(changeHistoryFromClient.getBaseRevision(), is(R0));
-        assertThat(changeHistoryFromClient.getHeadRevision(), is(R1));
-        assertThat(changeHistoryFromClient.getMetadata().size(), is(1));
-        assertThat(changeHistoryFromClient.getRevisions().size(), is(1));
-        assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(945));
+        assertThat(changeHistoryFromClient.getHeadRevision(), is(R0));
+        assertThat(changeHistoryFromClient.getMetadata().size(), is(0));
+        assertThat(changeHistoryFromClient.getRevisions().size(), is(0));
         
         ChangeHistory changeHistoryFromServer = ((LocalHttpClient) guest).getAllChanges(vont.getServerDocument());
         
         // Assert the remote change history
-        assertThat("The remote change history should not be empty", !changeHistoryFromServer.isEmpty());
+        assertThat("The remote change history should be empty", changeHistoryFromServer.isEmpty());
         assertThat(changeHistoryFromServer.getBaseRevision(), is(R0));
-        assertThat(changeHistoryFromServer.getHeadRevision(), is(R1));
-        assertThat(changeHistoryFromServer.getMetadata().size(), is(1));
-        assertThat(changeHistoryFromServer.getRevisions().size(), is(1));
-        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(0));
+        assertThat(changeHistoryFromServer.getHeadRevision(), is(R0));
+        assertThat(changeHistoryFromServer.getMetadata().size(), is(0));
+        assertThat(changeHistoryFromServer.getRevisions().size(), is(0));
     }
 
     @Test

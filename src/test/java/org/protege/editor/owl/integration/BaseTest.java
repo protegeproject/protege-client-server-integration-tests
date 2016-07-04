@@ -13,6 +13,9 @@ import org.protege.editor.owl.client.LocalRMIClient;
 import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.client.ui.DefaultUserAuthenticator;
 import org.protege.editor.owl.client.util.ServerUtils;
+import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.OWLModelManagerImpl;
+import org.protege.editor.owl.model.history.HistoryManagerImpl;
 import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.transport.rmi.RemoteLoginService;
 import org.protege.editor.owl.server.transport.rmi.RmiLoginService;
@@ -42,6 +45,8 @@ public abstract class BaseTest {
     protected static MetaprojectFactory f = Manager.getFactory();
 
     protected OWLOntologyManager owlManager;
+    
+    protected HistoryManagerImpl histManager;
     
     private static HTTPServer httpServer = null;
 
@@ -81,7 +86,9 @@ public abstract class BaseTest {
 
     @Before
     public void setup() {
-        owlManager = OWLManager.createOWLOntologyManager();
+    	owlManager = OWLManager.createOWLOntologyManager();
+    	histManager = new HistoryManagerImpl(owlManager);
+    	
     }
 
     @Before

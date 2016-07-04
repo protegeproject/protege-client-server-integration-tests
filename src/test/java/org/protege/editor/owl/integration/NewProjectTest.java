@@ -59,16 +59,14 @@ public class NewProjectTest extends BaseTest {
         assertThat(serverDocument, is(notNullValue()));
         assertThat(serverDocument.getServerAddress(), is(URI.create(SERVER_ADDRESS)));
         assertThat(serverDocument.getHistoryFile(), is(notNullValue()));
-        assertThat(serverDocument.getHistoryFile().length(), is(greaterThan(new Long(0))));
         
         // Assert the remote change history
         ChangeHistory remoteChangeHistory = getAdmin().getAllChanges(serverDocument);
-        assertThat("The remote change history should not be empty", !remoteChangeHistory.isEmpty());
+        assertThat("The remote change history should be empty", remoteChangeHistory.isEmpty());
         assertThat(remoteChangeHistory.getBaseRevision(), is(R0));
-        assertThat(remoteChangeHistory.getHeadRevision(), is(R1));
-        assertThat(remoteChangeHistory.getMetadata().size(), is(1));
-        assertThat(remoteChangeHistory.getRevisions().size(), is(1));
-        assertThat(remoteChangeHistory.getChangesForRevision(R1).size(), is(0));
+        assertThat(remoteChangeHistory.getHeadRevision(), is(R0));
+        assertThat(remoteChangeHistory.getMetadata().size(), is(0));
+        assertThat(remoteChangeHistory.getRevisions().size(), is(0));
     }
 
     @After

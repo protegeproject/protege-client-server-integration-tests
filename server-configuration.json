@@ -28,7 +28,78 @@
         "emailAddress": ""
       }
     ],
-    "projects": [],
+    "projects": [
+      {
+        "id": "BiomedGT-1467633546799",
+        "name": "NCI Thesaurus",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/BiomedGT-1467633546799/NCI_Thesaurus.history",
+        "owner": "root"
+      },
+      {
+        "id": "BiomedGT-1467642878389",
+        "name": "NCI Thesaurus",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/BiomedGT-1467642878389/NCI_Thesaurus.history",
+        "owner": "root"
+      },
+      {
+        "id": "BiomedGT-1467633368820",
+        "name": "NCI Thesaurus",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/BiomedGT-1467633368820/NCI_Thesaurus.history",
+        "owner": "root"
+      },
+      {
+        "id": "pizza-1467641805996",
+        "name": "Pizza Project",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/pizza-1467641805996/Pizza_Project.history",
+        "owner": "root"
+      },
+      {
+        "id": "pizza-1467634292719",
+        "name": "Pizza Project",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/pizza-1467634292719/Pizza_Project.history",
+        "owner": "root"
+      },
+      {
+        "id": "pizza-1467643680031",
+        "name": "Pizza Project",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/pizza-1467643680031/Pizza_Project.history",
+        "owner": "root"
+      },
+      {
+        "id": "pizza-1467642403587",
+        "name": "Pizza Project",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/pizza-1467642403587/Pizza_Project.history",
+        "owner": "root"
+      },
+      {
+        "id": "pizza-1467634419652",
+        "name": "Pizza Project",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/pizza-1467634419652/Pizza_Project.history",
+        "owner": "root"
+      },
+      {
+        "id": "pizza-1467643563387",
+        "name": "Pizza Project",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/pizza-1467643563387/Pizza_Project.history",
+        "owner": "root"
+      },
+      {
+        "id": "pizza-1467633707498",
+        "name": "Pizza Project",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/pizza-1467633707498/Pizza_Project.history",
+        "owner": "root"
+      }
+    ],
     "roles": [
       {
         "id": "mp-admin",

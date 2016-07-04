@@ -8,6 +8,7 @@ import static org.semanticweb.owlapi.apibinding.OWLFunctionalSyntaxFactory.IRI;
 import static org.semanticweb.owlapi.apibinding.OWLFunctionalSyntaxFactory.SubClassOf;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -34,6 +35,7 @@ import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
@@ -95,13 +97,20 @@ public class ConcurentCommitChangesTest extends BaseTest {
 	        /*
 	         * Simulates user edits over a working ontology (add axioms)
 	         */
-	        owlManager.addAxiom(workingOntology, Declaration(CUSTOMER));
-	        owlManager.addAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT));
+	        
+	        
+	        List<OWLOntologyChange> cs = new ArrayList<OWLOntologyChange>();
+	        cs.add(new AddAxiom(workingOntology, Declaration(CUSTOMER)));
+	        cs.add(new AddAxiom(workingOntology, SubClassOf(CUSTOMER, DOMAIN_CONCEPT)));
+	        
+	        owlManager.applyChanges(cs);
+	        
+	        histManager.logChanges(cs);
 	        
 	        /*
 	         * Prepare the commit bundle
 	         */
-	        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(vont.getOntology(), vont.getChangeHistory());
+	        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(histManager, vont.getOntology(), vont.getChangeHistory());
 	        Commit commit = ClientUtils.createCommit(getAdmin(), "Add customer subclass of domain concept", changes);
 	        DocumentRevision commitBaseRevision = vont.getHeadRevision();
 	        CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
@@ -139,13 +148,23 @@ public class ConcurentCommitChangesTest extends BaseTest {
 	        
 	        try {
 	        	h1 = fch1.get(); 
-	        	h2 = fch2.get();	
-	        
+	        	vont.update(h1);
 	        } catch (ExecutionException ex) {
 	        	expected = ex;
 	        	
 	        	
 	        }
+	        
+	        try {
+	        	h2 = fch2.get();
+	        	vont.update(h2);
+	        } catch (ExecutionException ex) {
+	        	expected = ex;
+	        	
+	        	
+	        }
+	        
+	        
 	        
 	        if (expected != null) {
 	        	assertThat(expected.getCause().getMessage(), is("The local copy is outdated. Please do update."));
@@ -174,19 +193,17 @@ public class ConcurentCommitChangesTest extends BaseTest {
 	        assertThat(changeHistoryFromClient.getHeadRevision(), is(R1));
 	        assertThat(changeHistoryFromClient.getMetadata().size(), is(1));
 	        assertThat(changeHistoryFromClient.getRevisions().size(), is(1));
-	        assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(945));
-	        //assertThat(changeHistoryFromClient.getChangesForRevision(R2).size(), is(2));
+	        assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), is(2));
 	        
 	        ChangeHistory changeHistoryFromServer = ((LocalHttpClient)getAdmin()).getAllChanges(vont.getServerDocument());
 	        
 	        // Assert the remote change history
 	        assertThat("The remote change history should not be empty", !changeHistoryFromServer.isEmpty());
 	        assertThat(changeHistoryFromServer.getBaseRevision(), is(R0));
-	        assertThat(changeHistoryFromServer.getHeadRevision(), is(R2));
-	        assertThat(changeHistoryFromServer.getMetadata().size(), is(2));
-	        assertThat(changeHistoryFromServer.getRevisions().size(), is(2));
-	        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(0));
-	        assertThat(changeHistoryFromServer.getChangesForRevision(R2).size(), is(2));
+	        assertThat(changeHistoryFromServer.getHeadRevision(), is(R1));
+	        assertThat(changeHistoryFromServer.getMetadata().size(), is(1));
+	        assertThat(changeHistoryFromServer.getRevisions().size(), is(1));
+	        assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(2));
 	    }
 	    
 	    @After
