@@ -30,13 +30,6 @@
     ],
     "projects": [
       {
-        "id": "BiomedGT-1467633546799",
-        "name": "NCI Thesaurus",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
-        "file": "root/data/BiomedGT-1467633546799/NCI_Thesaurus.history",
-        "owner": "root"
-      },
-      {
         "id": "BiomedGT-1467642878389",
         "name": "NCI Thesaurus",
         "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
@@ -48,6 +41,27 @@
         "name": "NCI Thesaurus",
         "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
         "file": "root/data/BiomedGT-1467633368820/NCI_Thesaurus.history",
+        "owner": "root"
+      },
+      {
+        "id": "BiomedGT-1468006021722",
+        "name": "NCI Thesaurus",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/BiomedGT-1468006021722/NCI_Thesaurus.history",
+        "owner": "root"
+      },
+      {
+        "id": "BiomedGT-1467633546799",
+        "name": "NCI Thesaurus",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/BiomedGT-1467633546799/NCI_Thesaurus.history",
+        "owner": "root"
+      },
+      {
+        "id": "BiomedGT-1468006115961",
+        "name": "NCI Thesaurus",
+        "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+        "file": "root/data/BiomedGT-1468006115961/NCI_Thesaurus.history",
         "owner": "root"
       },
       {

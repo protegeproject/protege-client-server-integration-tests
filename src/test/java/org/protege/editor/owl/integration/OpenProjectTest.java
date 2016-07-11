@@ -3,28 +3,18 @@ package org.protege.editor.owl.integration;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-import org.protege.editor.owl.client.LocalHttpClient;
-import org.protege.editor.owl.client.api.Client;
-import org.protege.editor.owl.client.util.ChangeUtils;
-import org.protege.editor.owl.client.util.ClientUtils;
-import org.protege.editor.owl.integration.BaseTest.PizzaOntology;
-import org.protege.editor.owl.server.api.CommitBundle;
-import org.protege.editor.owl.server.policy.CommitBundleImpl;
-import org.protege.editor.owl.server.versioning.Commit;
-import org.protege.editor.owl.server.versioning.api.ChangeHistory;
-import org.protege.editor.owl.server.versioning.api.ServerDocument;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
+import java.util.Optional;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.protege.editor.owl.client.LocalHttpClient;
+import org.protege.editor.owl.client.api.Client;
+import org.protege.editor.owl.server.versioning.api.ChangeHistory;
+import org.protege.editor.owl.server.versioning.api.ServerDocument;
+import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyChange;
-
-import java.util.List;
-import java.util.Optional;
 
 import edu.stanford.protege.metaproject.api.Description;
 import edu.stanford.protege.metaproject.api.Name;

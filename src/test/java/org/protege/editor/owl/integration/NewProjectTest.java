@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import org.protege.editor.owl.client.LocalHttpClient;
-import org.protege.editor.owl.client.util.ChangeUtils;
 import org.protege.editor.owl.client.util.ClientUtils;
 import org.protege.editor.owl.integration.BaseTest.PizzaOntology;
 import org.protege.editor.owl.server.api.CommitBundle;
