@@ -17,9 +17,9 @@ import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
 
-import edu.stanford.protege.metaproject.Manager;
-import edu.stanford.protege.metaproject.api.MetaprojectFactory;
+import edu.stanford.protege.metaproject.ConfigurationManager;
 import edu.stanford.protege.metaproject.api.PlainPassword;
+import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.UserId;
 
 public abstract class BaseTest {
@@ -33,7 +33,7 @@ public abstract class BaseTest {
     protected static final DocumentRevision R4 = DocumentRevision.create(4);
     protected static final DocumentRevision R5 = DocumentRevision.create(5);
 
-    protected static MetaprojectFactory f = Manager.getFactory();
+    protected static PolicyFactory f = ConfigurationManager.getFactory();
 
     protected OWLOntologyManager owlManager;
     
