@@ -37,6 +37,7 @@ public class OpenProjectTest extends BaseTest {
         /*
          * User inputs part
          */
+    	connectToServer(ADMIN_SERVER_ADDRESS);
         projectId = f.getProjectId("pizza-" + System.currentTimeMillis()); // currentTimeMilis() for uniqueness
         Name projectName = f.getName("Pizza Project");
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
@@ -55,7 +56,7 @@ public class OpenProjectTest extends BaseTest {
          */
         UserId guestId = f.getUserId("guest");
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
-        LocalHttpClient guest = login(guestId, guestPassword);
+        LocalHttpClient guest = login(guestId, guestPassword, SERVER_ADDRESS);
         
         ServerDocument serverDocument = guest.openProject(projectId);
         VersionedOWLOntology vont = guest.buildVersionedOntology(serverDocument, owlManager, projectId);
@@ -85,7 +86,7 @@ public class OpenProjectTest extends BaseTest {
          */
         UserId guestId = f.getUserId("guest");
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
-        Client guest = login(guestId, guestPassword);
+        Client guest = login(guestId, guestPassword, SERVER_ADDRESS);
         
         ServerDocument serverDocument = guest.openProject(projectId);
         VersionedOWLOntology vont = ((LocalHttpClient) guest).buildVersionedOntology(serverDocument, owlManager, projectId);
@@ -101,6 +102,7 @@ public class OpenProjectTest extends BaseTest {
 
     @After
     public void removeProject() throws Exception {
+    	connectToServer(ADMIN_SERVER_ADDRESS);
         getAdmin().deleteProject(projectId, true);
     }
 }

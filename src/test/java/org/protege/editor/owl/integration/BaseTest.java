@@ -10,7 +10,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.protege.editor.owl.client.LocalHttpClient;
-import org.protege.editor.owl.model.history.HistoryManagerImpl;
+//import org.protege.editor.owl.model.history.HistoryManagerImpl;
 import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -25,6 +25,7 @@ import edu.stanford.protege.metaproject.api.UserId;
 public abstract class BaseTest {
 
     protected static final String SERVER_ADDRESS = "http://localhost:8080";
+    protected static final String ADMIN_SERVER_ADDRESS = "http://localhost:8081";
 
     protected static final DocumentRevision R0 = DocumentRevision.START_REVISION;
     protected static final DocumentRevision R1 = DocumentRevision.create(1);
@@ -37,7 +38,7 @@ public abstract class BaseTest {
 
     protected OWLOntologyManager owlManager;
     
-    protected HistoryManagerImpl histManager;
+    protected SessionRecorder histManager;
     
     private static HTTPServer httpServer = null;
 
@@ -78,25 +79,19 @@ public abstract class BaseTest {
     @Before
     public void setup() {
     	owlManager = OWLManager.createOWLOntologyManager();
-    	histManager = new HistoryManagerImpl(owlManager);
     	
     }
 
-    @Before
-    public void connectToServer() throws Exception {
+    public void connectToServer(String address) throws Exception {
         UserId userId = f.getUserId("root");
         PlainPassword password = f.getPlainPassword("rootpwd");
-        admin = login(userId, password);
+        admin = login(userId, password, address);
     }
     
    
     @BeforeClass
     public static void startServer() throws Exception {
-    	String cfn = "server-configuration.json";
-    	
-    	File f = new File(cfn);
-    	boolean bool = f.exists();
-    	
+    	String cfn = "target/test-classes/server-configuration.json";    	
     	httpServer = new HTTPServer(cfn);
     	httpServer.start();
     	
@@ -108,9 +103,9 @@ public abstract class BaseTest {
         return admin;
     }
 
-    protected static LocalHttpClient login(UserId userId, PlainPassword password) throws Exception {
+    protected static LocalHttpClient login(UserId userId, PlainPassword password, String address) throws Exception {
         
-        return new LocalHttpClient(userId.get(), password.getPassword(), SERVER_ADDRESS);
+        return new LocalHttpClient(userId.get(), password.getPassword(), address);
     }
 
     protected static String uuid8char() {

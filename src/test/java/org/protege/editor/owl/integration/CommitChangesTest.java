@@ -75,6 +75,7 @@ public class CommitChangesTest extends BaseTest {
         /*
          * User inputs part
          */
+    	this.connectToServer(ADMIN_SERVER_ADDRESS);
         projectId = f.getProjectId("pizza-" + System.currentTimeMillis()); // currentTimeMilis() for uniqueness
         Name projectName = f.getName("Pizza Project");
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
@@ -87,6 +88,7 @@ public class CommitChangesTest extends BaseTest {
     }
 
     private VersionedOWLOntology openProjectAsAdmin() throws Exception {
+    	connectToServer(SERVER_ADDRESS);
         ServerDocument serverDocument = getAdmin().openProject(projectId);
         return getAdmin().buildVersionedOntology(serverDocument, owlManager, projectId);
     }
@@ -94,7 +96,7 @@ public class CommitChangesTest extends BaseTest {
     private VersionedOWLOntology openProjectAsGuest() throws Exception {
         UserId guestId = f.getUserId("guest");
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
-        guest = login(guestId, guestPassword);
+        guest = login(guestId, guestPassword, SERVER_ADDRESS);
         ServerDocument serverDocument = guest.openProject(projectId);
         return guest.buildVersionedOntology(serverDocument, owlManager, projectId);
     }
@@ -103,6 +105,7 @@ public class CommitChangesTest extends BaseTest {
     public void shouldCommitAddition() throws Exception {
         VersionedOWLOntology vont = openProjectAsAdmin();
         OWLOntology workingOntology = vont.getOntology();
+        histManager = new SessionRecorder(workingOntology);
         
         /*
          * Simulates user edits over a working ontology (add axioms)
@@ -120,7 +123,7 @@ public class CommitChangesTest extends BaseTest {
         /*
          * Prepare the commit bundle
          */
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(histManager, vont.getOntology(), vont.getChangeHistory());
+        List<OWLOntologyChange> changes = histManager.getUncommittedChanges();
         Commit commit = ClientUtils.createCommit(getAdmin(), "Add customer subclass of domain concept", changes);
         DocumentRevision commitBaseRevision = vont.getHeadRevision();
         CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
@@ -160,6 +163,7 @@ public class CommitChangesTest extends BaseTest {
     public void shouldCommitDeletion() throws Exception {
         VersionedOWLOntology vont = openProjectAsAdmin();
         OWLOntology workingOntology = vont.getOntology();
+        histManager = new SessionRecorder(workingOntology);
         
         /*
          * Simulates user edits over a working ontology (remove a class and its references)
@@ -194,7 +198,7 @@ public class CommitChangesTest extends BaseTest {
         /*
          * Prepare the commit bundle
          */
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(histManager, vont.getOntology(), vont.getChangeHistory());
+        List<OWLOntologyChange> changes = histManager.getUncommittedChanges();
         Commit commit = ClientUtils.createCommit(getAdmin(), "Remove MeatTopping and its references", changes);
         DocumentRevision commitBaseRevision = vont.getHeadRevision();
         CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
@@ -234,6 +238,7 @@ public class CommitChangesTest extends BaseTest {
     public void shouldNotCommitChange() throws Exception {
         VersionedOWLOntology vont = openProjectAsGuest();
         OWLOntology workingOntology = vont.getOntology();
+        histManager = new SessionRecorder(workingOntology);
         
         /*
          * Simulates user edits over a working ontology (add axioms)
@@ -250,7 +255,7 @@ public class CommitChangesTest extends BaseTest {
         /*
          * Prepare the commit bundle
          */
-        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(histManager, vont.getOntology(), vont.getChangeHistory());
+        List<OWLOntologyChange> changes = histManager.getUncommittedChanges();
         Commit commit = ClientUtils.createCommit(guest, "Add customer subclass of domain concept", changes);
         DocumentRevision commitBaseRevision = vont.getHeadRevision();
         CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
@@ -267,6 +272,7 @@ public class CommitChangesTest extends BaseTest {
 
     @After
     public void removeProject() throws Exception {
+    	this.connectToServer(ADMIN_SERVER_ADDRESS);
         getAdmin().deleteProject(projectId, true);
     }
 }

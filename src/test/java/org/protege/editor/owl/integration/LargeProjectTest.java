@@ -41,6 +41,7 @@ public class LargeProjectTest extends BaseTest {
         /*
          * [GUI] The input project properties
          */
+    	connectToServer(ADMIN_SERVER_ADDRESS);
         projectId = f.getProjectId("BiomedGT-" + System.currentTimeMillis());
         Name projectName = f.getName("NCI Thesaurus" );
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
@@ -59,6 +60,7 @@ public class LargeProjectTest extends BaseTest {
         assertThat(serverDocument.getHistoryFile(), is(notNullValue()));
         
         // Assert the remote change history
+        connectToServer(SERVER_ADDRESS);
         ChangeHistory remoteChangeHistory = ((LocalHttpClient) getAdmin()).getAllChanges(serverDocument);
         assertThat("The remote change history should be empty", remoteChangeHistory.isEmpty());
         assertThat(remoteChangeHistory.getBaseRevision(), is(R0));
@@ -74,7 +76,7 @@ public class LargeProjectTest extends BaseTest {
          */
         UserId guestId = f.getUserId("guest");
         PlainPassword guestPassword = f.getPlainPassword("guestpwd");
-        Client guest = login(guestId, guestPassword);
+        Client guest = login(guestId, guestPassword, SERVER_ADDRESS);
         
         ServerDocument serverDocument = guest.openProject(projectId);
         VersionedOWLOntology vont = ((LocalHttpClient) guest).buildVersionedOntology(serverDocument, owlManager, projectId);
@@ -98,6 +100,8 @@ public class LargeProjectTest extends BaseTest {
         
         //assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(), 
         		//is(changeHistoryFromServer.getChangesForRevision(R1).size()));
+        
+        connectToServer(ADMIN_SERVER_ADDRESS);
         
         getAdmin().deleteProject(projectId, true);
     }

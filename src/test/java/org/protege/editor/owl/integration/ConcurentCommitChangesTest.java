@@ -71,6 +71,7 @@ public class ConcurentCommitChangesTest extends BaseTest {
 	        /*
 	         * User inputs part
 	         */
+	    	this.connectToServer(ADMIN_SERVER_ADDRESS);
 	        projectId = f.getProjectId("pizza-" + System.currentTimeMillis()); // currentTimeMilis() for uniqueness
 	        Name projectName = f.getName("Pizza Project");
 	        Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
@@ -83,6 +84,7 @@ public class ConcurentCommitChangesTest extends BaseTest {
 	    }
 	    
 	    private VersionedOWLOntology openProjectAsAdmin() throws Exception {
+	    	this.connectToServer(SERVER_ADDRESS);
 	        ServerDocument serverDocument = getAdmin().openProject(projectId);
 	        return getAdmin().buildVersionedOntology(serverDocument, owlManager, projectId);
 	    }
@@ -91,6 +93,7 @@ public class ConcurentCommitChangesTest extends BaseTest {
 	    public void shouldCommitAddition() throws Exception {
 	        VersionedOWLOntology vont = openProjectAsAdmin();
 	        OWLOntology workingOntology = vont.getOntology();
+	        histManager = new SessionRecorder(workingOntology);
 	        
 	        
 	        
@@ -110,7 +113,7 @@ public class ConcurentCommitChangesTest extends BaseTest {
 	        /*
 	         * Prepare the commit bundle
 	         */
-	        List<OWLOntologyChange> changes = ClientUtils.getUncommittedChanges(histManager, vont.getOntology(), vont.getChangeHistory());
+	        List<OWLOntologyChange> changes = histManager.getUncommittedChanges();
 	        Commit commit = ClientUtils.createCommit(getAdmin(), "Add customer subclass of domain concept", changes);
 	        DocumentRevision commitBaseRevision = vont.getHeadRevision();
 	        CommitBundle commitBundle = new CommitBundleImpl(commitBaseRevision, commit);
@@ -167,7 +170,7 @@ public class ConcurentCommitChangesTest extends BaseTest {
 	        
 	        
 	        if (expected != null) {
-	        	assertThat(expected.getCause().getMessage(), is("The local copy is outdated. Please do update."));
+	        	assertThat(expected.getCause().getMessage(), is("Commit failed, please update your local copy first"));
 	        } else {
 	        	// we should have gotten an exception
 	        	assertThat(1 + 1, is(3));
@@ -208,6 +211,7 @@ public class ConcurentCommitChangesTest extends BaseTest {
 	    
 	    @After
 	    public void removeProject() throws Exception {
+	    	connectToServer(ADMIN_SERVER_ADDRESS);
 	        getAdmin().deleteProject(projectId, true);
 	    }
 

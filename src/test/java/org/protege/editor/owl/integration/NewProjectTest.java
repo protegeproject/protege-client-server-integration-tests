@@ -43,6 +43,7 @@ public class NewProjectTest extends BaseTest {
         /*
          * [GUI] The input project properties
          */
+    	connectToServer(ADMIN_SERVER_ADDRESS);
         projectId = f.getProjectId("pizza-" + System.currentTimeMillis()); // currentTimeMilis() for uniqueness
         Name projectName = f.getName("Pizza Project");
         Description description = f.getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
@@ -60,6 +61,7 @@ public class NewProjectTest extends BaseTest {
         assertThat(serverDocument.getHistoryFile(), is(notNullValue()));
         
         // Assert the remote change history
+        connectToServer(SERVER_ADDRESS);
         ChangeHistory remoteChangeHistory = getAdmin().getAllChanges(serverDocument);
         assertThat("The remote change history should be empty", remoteChangeHistory.isEmpty());
         assertThat(remoteChangeHistory.getBaseRevision(), is(R0));
@@ -70,6 +72,7 @@ public class NewProjectTest extends BaseTest {
 
     @After
     public void removeProject() throws Exception {
+    	connectToServer(ADMIN_SERVER_ADDRESS);
         getAdmin().deleteProject(projectId, true);
     }
 }
