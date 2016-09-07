@@ -1,9 +1,11 @@
 package org.protege.editor.owl.integration;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.UUID;
 
+import org.apache.commons.io.FileUtils;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.AfterClass;
@@ -23,6 +25,9 @@ import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.UserId;
 
 public abstract class BaseTest {
+
+    private static final String orginalConfigLocation = "src/test/resources/server-configuration.json";
+    private static final String workingConfigLocation = "src/test/resources/working-server-configuration.json";
 
     protected static final String SERVER_ADDRESS = "http://localhost:8080";
     protected static final String ADMIN_SERVER_ADDRESS = "http://localhost:8081";
@@ -91,10 +96,16 @@ public abstract class BaseTest {
    
     @BeforeClass
     public static void startServer() throws Exception {
-    	String cfn = "target/test-classes/server-configuration.json";    	
-    	httpServer = new HTTPServer(cfn);
-    	httpServer.start();
-    	
+        initServerConfiguration();
+        httpServer = new HTTPServer();
+        httpServer.start();
+    }
+
+    private static void initServerConfiguration() throws IOException {
+        File originalCopy = new File(orginalConfigLocation);
+        File workingCopy = new File(workingConfigLocation);
+        FileUtils.copyFile(originalCopy, workingCopy);
+        System.setProperty(HTTPServer.SERVER_CONFIGURATION_PROPERTY, workingConfigLocation);
     }
     
 
@@ -141,8 +152,15 @@ public abstract class BaseTest {
 
     @AfterClass
     public static void stopServer() throws Exception {
-    	httpServer.stop();
+        httpServer.stop();
+        removeServerConfiguration();
+    }
 
+    private static void removeServerConfiguration() {
+        File workingCopy = new File(workingConfigLocation);
+        if (workingCopy.exists()) {
+            workingCopy.delete();
+        }
     }
     
 }
