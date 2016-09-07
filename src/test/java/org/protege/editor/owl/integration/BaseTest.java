@@ -12,7 +12,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.protege.editor.owl.client.LocalHttpClient;
-//import org.protege.editor.owl.model.history.HistoryManagerImpl;
 import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.semanticweb.owlapi.apibinding.OWLManager;
@@ -24,6 +23,10 @@ import edu.stanford.protege.metaproject.api.PlainPassword;
 import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.UserId;
 
+/**
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
 public abstract class BaseTest {
 
     private static final String orginalConfigLocation = "src/test/resources/server-configuration.json";
@@ -50,11 +53,9 @@ public abstract class BaseTest {
     private LocalHttpClient admin;
 
     protected static class PizzaOntology {
-
         static final String getId() {
             return "http://www.co-ode.org/ontologies/pizza/pizza.owl";
         }
-
         static final File getResource() {
             try {
                 return new File(NewProjectTest.class.getResource("/pizza.owl").toURI());
@@ -64,13 +65,11 @@ public abstract class BaseTest {
             }
         }
     }
-    
-    protected static class LargeOntology {
 
+    protected static class LargeOntology {
         static final String getId() {
             return "http://ncicb.nci.nih.gov/xml/owl/EVS/Thesaurus.owl";
         }
-
         static final File getResource() {
             try {
                 return new File(NewProjectTest.class.getResource("/thesaurus.owl").toURI());
@@ -81,19 +80,6 @@ public abstract class BaseTest {
         }
     }
 
-    @Before
-    public void setup() {
-    	owlManager = OWLManager.createOWLOntologyManager();
-    	
-    }
-
-    public void connectToServer(String address) throws Exception {
-        UserId userId = f.getUserId("root");
-        PlainPassword password = f.getPlainPassword("rootpwd");
-        admin = login(userId, password, address);
-    }
-    
-   
     @BeforeClass
     public static void startServer() throws Exception {
         initServerConfiguration();
@@ -107,48 +93,11 @@ public abstract class BaseTest {
         FileUtils.copyFile(originalCopy, workingCopy);
         System.setProperty(HTTPServer.SERVER_CONFIGURATION_PROPERTY, workingConfigLocation);
     }
-    
 
-
-    protected LocalHttpClient getAdmin() {
-        return admin;
+    @Before
+    public void setup() {
+        owlManager = OWLManager.createOWLOntologyManager();
     }
-
-    protected static LocalHttpClient login(UserId userId, PlainPassword password, String address) throws Exception {
-        
-        return new LocalHttpClient(userId.get(), password.getPassword(), address);
-    }
-
-    protected static String uuid8char() {
-        final UUID uuid = UUID.randomUUID();
-        return uuid.toString().replace("-", "").substring(0, 8);
-    }
-
-    protected static class CauseMatcher extends TypeSafeMatcher<Throwable> {
-        
-        private final Class<? extends Throwable> type;
-        private final String expectedMessage;
-     
-        public CauseMatcher(Class<? extends Throwable> type, String expectedMessage) {
-            this.type = type;
-            this.expectedMessage = expectedMessage;
-        }
-     
-        @Override
-        protected boolean matchesSafely(Throwable item) {
-            return item.getClass().isAssignableFrom(type)
-                    && item.getMessage().contains(expectedMessage);
-        }
-     
-        @Override
-        public void describeTo(Description description) {
-            description.appendText("expects type ")
-                    .appendValue(type)
-                    .appendText(" and a message ")
-                    .appendValue(expectedMessage);
-        }
-    }
-    
 
     @AfterClass
     public static void stopServer() throws Exception {
@@ -162,5 +111,48 @@ public abstract class BaseTest {
             workingCopy.delete();
         }
     }
-    
+
+    public void connectToServer(String address) throws Exception {
+        UserId userId = f.getUserId("root");
+        PlainPassword password = f.getPlainPassword("rootpwd");
+        admin = login(userId, password, address);
+    }
+
+    protected LocalHttpClient login(UserId userId, PlainPassword password, String address) throws Exception {
+        return new LocalHttpClient(userId.get(), password.getPassword(), address);
+    }
+
+    protected LocalHttpClient getAdmin() {
+        return admin;
+    }
+
+    protected static String uuid8char() {
+        final UUID uuid = UUID.randomUUID();
+        return uuid.toString().replace("-", "").substring(0, 8);
+    }
+
+    protected static class CauseMatcher extends TypeSafeMatcher<Throwable> {
+
+        private final Class<? extends Throwable> type;
+        private final String expectedMessage;
+
+        public CauseMatcher(Class<? extends Throwable> type, String expectedMessage) {
+            this.type = type;
+            this.expectedMessage = expectedMessage;
+        }
+
+        @Override
+        protected boolean matchesSafely(Throwable item) {
+            return item.getClass().isAssignableFrom(type)
+                    && item.getMessage().contains(expectedMessage);
+        }
+
+        @Override
+        public void describeTo(Description description) {
+            description.appendText("expects type ")
+                    .appendValue(type)
+                    .appendText(" and a message ")
+                    .appendValue(expectedMessage);
+        }
+    }
 }
