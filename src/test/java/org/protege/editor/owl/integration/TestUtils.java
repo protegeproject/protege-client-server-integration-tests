@@ -1,8 +1,13 @@
 package org.protege.editor.owl.integration;
 
+import java.util.Set;
+
 import edu.stanford.protege.metaproject.ConfigurationManager;
+import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.Password;
 import edu.stanford.protege.metaproject.api.PolicyFactory;
+import edu.stanford.protege.metaproject.api.Role;
+import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
 
@@ -26,5 +31,20 @@ public class TestUtils {
 
     public static Password createPassword(String passwd) {
         return f.getPlainPassword(passwd);
+    }
+
+    public static RoleId createRoleId(String roleId) {
+        return f.getRoleId(roleId);
+    }
+
+    public static Role createRole(String roleId, String name, String description, Set<OperationId> operations) {
+        return f.getRole(createRoleId(roleId),
+                f.getName(name),
+                f.getDescription(description),
+                operations);
+    }
+
+    public static OperationId createOperationId(String operationId) {
+        return f.getOperationId(operationId);
     }
 }
