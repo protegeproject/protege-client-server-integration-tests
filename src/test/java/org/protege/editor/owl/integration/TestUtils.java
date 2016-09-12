@@ -3,7 +3,10 @@ package org.protege.editor.owl.integration;
 import java.util.Set;
 
 import edu.stanford.protege.metaproject.ConfigurationManager;
+import edu.stanford.protege.metaproject.api.Operation;
+import edu.stanford.protege.metaproject.api.Operation.Scope;
 import edu.stanford.protege.metaproject.api.OperationId;
+import edu.stanford.protege.metaproject.api.OperationType;
 import edu.stanford.protege.metaproject.api.Password;
 import edu.stanford.protege.metaproject.api.PolicyFactory;
 import edu.stanford.protege.metaproject.api.Role;
@@ -46,5 +49,14 @@ public class TestUtils {
 
     public static OperationId createOperationId(String operationId) {
         return f.getOperationId(operationId);
+    }
+
+    public static Operation createOperation(String operationId, String name, String description,
+            OperationType operationType, Scope scope) {
+        return f.getCustomOperation(createOperationId(operationId),
+                f.getName(name),
+                f.getDescription(description),
+                operationType,
+                scope);
     }
 }
