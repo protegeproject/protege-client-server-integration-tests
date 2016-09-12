@@ -3,13 +3,9 @@ package org.protege.editor.owl.integration;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.UUID;
 
 import org.apache.commons.io.FileUtils;
-import org.hamcrest.Description;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.server.http.HTTPServer;
@@ -42,12 +38,12 @@ public abstract class BaseTest {
     protected static final DocumentRevision R4 = DocumentRevision.create(4);
     protected static final DocumentRevision R5 = DocumentRevision.create(5);
 
-    protected static PolicyFactory f = ConfigurationManager.getFactory();
+    protected static final PolicyFactory f = ConfigurationManager.getFactory();
 
-    protected OWLOntologyManager owlManager;
-    
+    protected final OWLOntologyManager owlManager = OWLManager.createOWLOntologyManager();
+
     protected SessionRecorder histManager;
-    
+
     private static HTTPServer httpServer = null;
 
     private LocalHttpClient admin;
@@ -94,11 +90,6 @@ public abstract class BaseTest {
         System.setProperty(HTTPServer.SERVER_CONFIGURATION_PROPERTY, workingConfigLocation);
     }
 
-    @Before
-    public void setup() {
-        owlManager = OWLManager.createOWLOntologyManager();
-    }
-
     @AfterClass
     public static void stopServer() throws Exception {
         httpServer.stop();
@@ -112,47 +103,41 @@ public abstract class BaseTest {
         }
     }
 
+    @Deprecated
+    /**
+     * Use method connect() instead
+     */
     public void connectToServer(String address) throws Exception {
         UserId userId = f.getUserId("root");
         PlainPassword password = f.getPlainPassword("rootpwd");
         admin = login(userId, password, address);
     }
 
+    protected LocalHttpClient connect(String username, String password, String serverAddress) throws Exception {
+        return new LocalHttpClient(username, password, serverAddress);
+    }
+
+    protected LocalHttpClient connectAsAdmin() throws Exception {
+        return connect("root", "rootpwd", ADMIN_SERVER_ADDRESS);
+    }
+
+    protected LocalHttpClient connectAsGuest() throws Exception {
+        return connect("guest", "guestpwd", SERVER_ADDRESS);
+    }
+
+    @Deprecated
+    /**
+     * Use method connect() instead
+     */
     protected LocalHttpClient login(UserId userId, PlainPassword password, String address) throws Exception {
         return new LocalHttpClient(userId.get(), password.getPassword(), address);
     }
 
+    @Deprecated
+    /**
+     * Use method connectAsAdmin() instead
+     */
     protected LocalHttpClient getAdmin() {
         return admin;
-    }
-
-    protected static String uuid8char() {
-        final UUID uuid = UUID.randomUUID();
-        return uuid.toString().replace("-", "").substring(0, 8);
-    }
-
-    protected static class CauseMatcher extends TypeSafeMatcher<Throwable> {
-
-        private final Class<? extends Throwable> type;
-        private final String expectedMessage;
-
-        public CauseMatcher(Class<? extends Throwable> type, String expectedMessage) {
-            this.type = type;
-            this.expectedMessage = expectedMessage;
-        }
-
-        @Override
-        protected boolean matchesSafely(Throwable item) {
-            return item.getClass().isAssignableFrom(type)
-                    && item.getMessage().contains(expectedMessage);
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendText("expects type ")
-                    .appendValue(type)
-                    .appendText(" and a message ")
-                    .appendValue(expectedMessage);
-        }
     }
 }
