@@ -22,7 +22,7 @@ import edu.stanford.protege.metaproject.api.exception.UserNotRegisteredException
  * @author Josef Hardi <johardi@stanford.edu> <br>
  * Stanford Center for Biomedical Informatics Research
  */
-public class UserManagementTest extends BaseTest {
+public class UserCrudTest extends BaseTest {
 
     private LocalHttpClient admin;
 
