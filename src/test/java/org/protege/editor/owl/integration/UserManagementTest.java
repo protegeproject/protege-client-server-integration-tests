@@ -1,5 +1,6 @@
 package org.protege.editor.owl.integration;
 
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
@@ -108,7 +109,8 @@ public class UserManagementTest extends BaseTest {
         
         // Assert before the update
         ServerConfiguration sc = admin.getCurrentConfig();
-        assertThat(sc.containsUser(userId), is(true));
+        User user = sc.getUser(userId);
+        assertThat(user, is(notNullValue()));
         assertThat(sc.getUser(userId).getName().get(), is("bob"));
         assertThat(sc.getUser(userId).getEmailAddress().get(), is("bob"));
         
@@ -117,9 +119,8 @@ public class UserManagementTest extends BaseTest {
         admin.updateUser(userId, updatedUser, Optional.empty());
         admin.reallyPutConfig(); // upload changes to server
         
-        // Assert after the deletion
+        // Assert after the update
         ServerConfiguration nsc = admin.getCurrentConfig();
-        assertThat(nsc.containsUser(userId), is(true));
         assertThat(nsc.getUser(userId), is(updatedUser));
         assertThat(nsc.getUser(userId).getName().get(), is("Bob Underwood"));
         assertThat(nsc.getUser(userId).getEmailAddress().get(), is("bob.underwood@email.com"));
