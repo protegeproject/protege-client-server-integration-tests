@@ -47,7 +47,7 @@ public class GuestUserTest extends BaseTest {
         assertThat(guest.canDeleteProject(), is(false));
         assertThat(guest.canDeleteRole(), is(false));
         assertThat(guest.canDeleteUser(), is(false));
-        assertThat(guest.canOpenProject(), is(false));
+        assertThat(guest.canOpenProject(), is(true));
         assertThat(guest.canRetractRole(), is(false));
         assertThat(guest.canStopServer(), is(false));
         assertThat(guest.canUpdateOperation(), is(false));
