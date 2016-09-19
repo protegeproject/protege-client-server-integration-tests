@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
@@ -16,9 +17,11 @@ import org.junit.rules.ExpectedException;
 import org.protege.editor.owl.client.LocalHttpClient;
 
 import edu.stanford.protege.metaproject.api.OperationId;
+import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.ServerConfiguration;
+import edu.stanford.protege.metaproject.api.UserId;
 import edu.stanford.protege.metaproject.api.exception.UnknownRoleIdException;
 
 /**
@@ -100,6 +103,15 @@ public class RoleCrudTest extends BaseTest {
         // Assert after the addition
         ServerConfiguration nsc = admin.getCurrentConfig();
         assertThat(nsc.containsRole(roleId), is(false));
+        
+        // Check if the role is no longer recorded in the policy
+        Map<UserId, Map<ProjectId, Set<RoleId>>> policyMap = nsc.getPolicyMap();
+        for (UserId userId : policyMap.keySet()) {
+            Map<ProjectId, Set<RoleId>> roleAssignments = policyMap.get(userId);
+            for (Set<RoleId> assignedRoles : roleAssignments.values()) {
+                assertThat(assignedRoles.contains(roleId), is(false));
+            }
+        }
         
         thrown.expect(UnknownRoleIdException.class);
         nsc.getRole(roleId);

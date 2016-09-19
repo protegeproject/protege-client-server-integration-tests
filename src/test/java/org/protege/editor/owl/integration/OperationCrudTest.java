@@ -4,6 +4,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,6 +16,7 @@ import edu.stanford.protege.metaproject.api.Operation;
 import edu.stanford.protege.metaproject.api.Operation.Scope;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.OperationType;
+import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.ServerConfiguration;
 import edu.stanford.protege.metaproject.api.exception.UnknownOperationIdException;
 
@@ -70,6 +73,12 @@ public class OperationCrudTest extends BaseTest {
         // Assert after the deletion
         ServerConfiguration nsc = admin.getCurrentConfig();
         assertThat(nsc.containsOperation(operationId), is(false));
+        
+        // Check if the operation is no longer recorded in every roles
+        for (Role role : nsc.getRoles()) { // assert the operation does not exist in any roles
+            Set<OperationId> operationsBelongToRole = role.getOperations();
+            assertThat(operationsBelongToRole.contains(operationId), is(false));
+        }
         
         thrown.expect(UnknownOperationIdException.class);
         nsc.getOperation(operationId);

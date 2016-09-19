@@ -4,7 +4,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -13,6 +15,8 @@ import org.junit.rules.ExpectedException;
 import org.protege.editor.owl.client.LocalHttpClient;
 
 import edu.stanford.protege.metaproject.api.Password;
+import edu.stanford.protege.metaproject.api.ProjectId;
+import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.ServerConfiguration;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
@@ -96,7 +100,11 @@ public class UserCrudTest extends BaseTest {
         // Assert after the deletion
         ServerConfiguration nsc = admin.getCurrentConfig();
         assertThat(nsc.containsUser(userId), is(false));
-        assertThat(nsc.getUserRoleMap(userId).isEmpty(), is(true));
+        
+        // Check if the user is no longer recorded in the policy
+        Map<UserId, Map<ProjectId, Set<RoleId>>> policyMap = nsc.getPolicyMap();
+        Set<UserId> existingUsersInPolicy = policyMap.keySet();
+        assertThat(existingUsersInPolicy.contains(userId), is(false));
         
         thrown.expect(UserNotRegisteredException.class);
         nsc.getAuthenticationDetails(userId);
