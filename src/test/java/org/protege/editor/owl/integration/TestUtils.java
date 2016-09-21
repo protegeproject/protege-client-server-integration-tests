@@ -39,7 +39,9 @@ public class TestUtils {
     }
 
     public static Password createPassword(String passwd) {
-        return f.getPlainPassword(passwd);
+        PolicyFactory f = ConfigurationManager.getFactory();
+        PasswordHasher hasher = f.getPasswordHasher();
+        return hasher.hash(f.getPlainPassword(passwd), f.getSaltGenerator().generate());
     }
 
     public static RoleId createRoleId(String roleId) {
