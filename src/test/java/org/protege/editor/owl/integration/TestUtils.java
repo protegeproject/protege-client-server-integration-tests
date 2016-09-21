@@ -1,5 +1,7 @@
 package org.protege.editor.owl.integration;
 
+import java.io.File;
+import java.util.Optional;
 import java.util.Set;
 
 import edu.stanford.protege.metaproject.ConfigurationManager;
@@ -8,7 +10,11 @@ import edu.stanford.protege.metaproject.api.Operation.Scope;
 import edu.stanford.protege.metaproject.api.OperationId;
 import edu.stanford.protege.metaproject.api.OperationType;
 import edu.stanford.protege.metaproject.api.Password;
+import edu.stanford.protege.metaproject.api.PasswordHasher;
 import edu.stanford.protege.metaproject.api.PolicyFactory;
+import edu.stanford.protege.metaproject.api.Project;
+import edu.stanford.protege.metaproject.api.ProjectId;
+import edu.stanford.protege.metaproject.api.ProjectOptions;
 import edu.stanford.protege.metaproject.api.Role;
 import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.User;
@@ -58,5 +64,19 @@ public class TestUtils {
                 f.getDescription(description),
                 operationType,
                 scope);
+    }
+
+    public static ProjectId createProjectId(String projectId) {
+        return f.getProjectId(projectId);
+    }
+
+    public static Project createProject(String projectId, String name, String description,
+            File file, String ownerId, Optional<ProjectOptions> projectOptions) {
+        return f.getProject(createProjectId(projectId),
+                f.getName(name),
+                f.getDescription(description),
+                file,
+                f.getUserId(ownerId),
+                projectOptions);
     }
 }
