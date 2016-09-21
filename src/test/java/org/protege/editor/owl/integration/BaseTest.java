@@ -5,13 +5,9 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.server.http.HTTPServer;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
 
 import edu.stanford.protege.metaproject.ConfigurationManager;
@@ -40,10 +36,6 @@ public abstract class BaseTest {
 
     protected static final PolicyFactory f = ConfigurationManager.getFactory();
 
-    protected final OWLOntologyManager owlManager = OWLManager.createOWLOntologyManager();
-
-    protected SessionRecorder histManager;
-
     private static HTTPServer httpServer = null;
 
     private LocalHttpClient admin;
@@ -54,7 +46,7 @@ public abstract class BaseTest {
         }
         static final File getResource() {
             try {
-                return new File(NewProjectTest.class.getResource("/pizza.owl").toURI());
+                return new File(BaseTest.class.getResource("/pizza.owl").toURI());
             }
             catch (URISyntaxException e) {
                 throw new OWLRuntimeException("File not found", e);
@@ -68,7 +60,7 @@ public abstract class BaseTest {
         }
         static final File getResource() {
             try {
-                return new File(NewProjectTest.class.getResource("/thesaurus.owl").toURI());
+                return new File(BaseTest.class.getResource("/thesaurus.owl").toURI());
             }
             catch (URISyntaxException e) {
                 throw new OWLRuntimeException("File not found", e);
@@ -76,27 +68,25 @@ public abstract class BaseTest {
         }
     }
 
-    @BeforeClass
-    public static void startServer() throws Exception {
+    protected void startCleanServer() throws Exception {
         initServerConfiguration();
         httpServer = new HTTPServer();
         httpServer.start();
     }
 
-    private static void initServerConfiguration() throws IOException {
+    private void initServerConfiguration() throws IOException {
         File originalCopy = new File(orginalConfigLocation);
         File workingCopy = new File(workingConfigLocation);
         FileUtils.copyFile(originalCopy, workingCopy);
         System.setProperty(HTTPServer.SERVER_CONFIGURATION_PROPERTY, workingConfigLocation);
     }
 
-    @AfterClass
-    public static void stopServer() throws Exception {
+    protected void stopServer() throws Exception {
         httpServer.stop();
         removeServerConfiguration();
     }
 
-    private static void removeServerConfiguration() {
+    private void removeServerConfiguration() {
         File workingCopy = new File(workingConfigLocation);
         if (workingCopy.exists()) {
             workingCopy.delete();
