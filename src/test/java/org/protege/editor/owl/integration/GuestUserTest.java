@@ -1,11 +1,14 @@
 package org.protege.editor.owl.integration;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.protege.editor.owl.client.LocalHttpClient;
 
@@ -20,13 +23,22 @@ import edu.stanford.protege.metaproject.api.User;
  */
 public class GuestUserTest extends BaseTest {
 
+    @Before
+    public void setUp() throws Exception {
+        startCleanServer();
+    }
+
+    @After
+    public void cleanUp() throws Exception {
+        stopServer();
+    }
+
     @Test
-    public void couldLoginAsAdmin() throws Exception {
-        
-        LocalHttpClient guest = (LocalHttpClient) connectAsGuest();
+    public void couldLoginAsGuest() throws Exception {
+        LocalHttpClient guest = connectAsGuest();
         
         // Assert user guest
-        assertThat(guest, is(notNullValue()));
+        assertThat(guest, is(not(nullValue())));
         assertThat(guest.getUserInfo().getId(), is("guest"));
         assertThat(guest.getUserInfo().getName(), is("Guest User"));
         assertThat(guest.getUserInfo().getEmailAddress(), is(""));
@@ -34,8 +46,7 @@ public class GuestUserTest extends BaseTest {
 
     @Test
     public void couldQueryDefaultPolicyOperations() throws Exception {
-        
-        LocalHttpClient guest = (LocalHttpClient) connectAsGuest();
+        LocalHttpClient guest = connectAsGuest();
         
         // Assert allowed operations
         assertThat(guest.canAssignRole(), is(false));
@@ -59,53 +70,45 @@ public class GuestUserTest extends BaseTest {
 
     @Test
     public void couldBrowseAllUsers() throws Exception {
-        
-        LocalHttpClient guest = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient guest = connectAsGuest();
         
         // Perform the action
         List<User> users = guest.getAllUsers();
         
         // Assert user list
-        assertThat(users, is(notNullValue()));
-        assertThat(users.isEmpty(), is(false));
+        assertThat(users, is(not(nullValue())));
     }
 
     @Test
     public void couldBrowseAllProjects() throws Exception {
-        
-        LocalHttpClient guest = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient guest = connectAsGuest();
         
         // Perform the action
         List<Project> projects = guest.getAllProjects();
         
         // Assert user list
-        assertThat(projects, is(notNullValue()));
-        assertThat(projects.isEmpty(), is(true));
+        assertThat(projects, is(not(nullValue())));
     }
 
     @Test
     public void couldBrowseAllRoles() throws Exception {
-        
-        LocalHttpClient guest = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient guest = connectAsGuest();
         
         // Perform the action
         List<Role> roles = guest.getAllRoles();
         
         // Assert user list
-        assertThat(roles, is(notNullValue()));
-        assertThat(roles.isEmpty(), is(false));
+        assertThat(roles, is(not(nullValue())));
     }
 
     @Test
     public void couldBrowseAllOperations() throws Exception {
-        
-        LocalHttpClient guest = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient guest = connectAsGuest();
         
         // Perform the action
         List<Operation> operations = guest.getAllOperations();
         
         // Assert user list
-        assertThat(operations, is(notNullValue()));
-        assertThat(operations.isEmpty(), is(false));
+        assertThat(operations, is(not(nullValue())));
     }
 }

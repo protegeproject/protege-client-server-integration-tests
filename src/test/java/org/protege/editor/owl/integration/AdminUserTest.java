@@ -1,11 +1,14 @@
 package org.protege.editor.owl.integration;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import java.util.List;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.protege.editor.owl.client.LocalHttpClient;
 
@@ -20,13 +23,22 @@ import edu.stanford.protege.metaproject.api.User;
  */
 public class AdminUserTest extends BaseTest {
 
+    @Before
+    public void setUp() throws Exception {
+        startCleanServer();
+    }
+
+    @After
+    public void cleanUp() throws Exception {
+        stopServer();
+    }
+
     @Test
     public void couldLoginAsAdmin() throws Exception {
-        
-        LocalHttpClient admin = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient admin = connectAsAdmin();
         
         // Assert user admin
-        assertThat(admin, is(notNullValue()));
+        assertThat(admin, is(not(nullValue())));
         assertThat(admin.getUserInfo().getId(), is("root"));
         assertThat(admin.getUserInfo().getName(), is("Root User"));
         assertThat(admin.getUserInfo().getEmailAddress(), is(""));
@@ -34,8 +46,7 @@ public class AdminUserTest extends BaseTest {
 
     @Test
     public void couldQueryDefaultPolicyOperations() throws Exception {
-        
-        LocalHttpClient admin = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient admin = connectAsAdmin();
         
         // Assert allowed operations
         assertThat(admin.canAssignRole(), is(true));
@@ -59,53 +70,45 @@ public class AdminUserTest extends BaseTest {
 
     @Test
     public void couldBrowseAllUsers() throws Exception {
-        
-        LocalHttpClient admin = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient admin = connectAsAdmin();
         
         // Perform the action
         List<User> users = admin.getAllUsers();
         
         // Assert user list
-        assertThat(users, is(notNullValue()));
-        assertThat(users.isEmpty(), is(false));
+        assertThat(users, is(not(nullValue())));
     }
 
     @Test
     public void couldBrowseAllProjects() throws Exception {
-        
-        LocalHttpClient admin = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient admin = connectAsAdmin();
         
         // Perform the action
         List<Project> projects = admin.getAllProjects();
         
         // Assert user list
-        assertThat(projects, is(notNullValue()));
-        assertThat(projects.isEmpty(), is(true));
+        assertThat(projects, is(not(nullValue())));
     }
 
     @Test
     public void couldBrowseAllRoles() throws Exception {
-        
-        LocalHttpClient admin = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient admin = connectAsAdmin();
         
         // Perform the action
         List<Role> roles = admin.getAllRoles();
         
         // Assert user list
-        assertThat(roles, is(notNullValue()));
-        assertThat(roles.isEmpty(), is(false));
+        assertThat(roles, is(not(nullValue())));
     }
 
     @Test
     public void couldBrowseAllOperations() throws Exception {
-        
-        LocalHttpClient admin = (LocalHttpClient) connectAsAdmin();
+        LocalHttpClient admin = connectAsAdmin();
         
         // Perform the action
         List<Operation> operations = admin.getAllOperations();
         
         // Assert user list
-        assertThat(operations, is(notNullValue()));
-        assertThat(operations.isEmpty(), is(false));
+        assertThat(operations, is(not(nullValue())));
     }
 }

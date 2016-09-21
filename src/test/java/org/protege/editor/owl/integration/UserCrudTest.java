@@ -1,13 +1,13 @@
 package org.protege.editor.owl.integration;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,8 +15,6 @@ import org.junit.rules.ExpectedException;
 import org.protege.editor.owl.client.LocalHttpClient;
 
 import edu.stanford.protege.metaproject.api.Password;
-import edu.stanford.protege.metaproject.api.ProjectId;
-import edu.stanford.protege.metaproject.api.RoleId;
 import edu.stanford.protege.metaproject.api.ServerConfiguration;
 import edu.stanford.protege.metaproject.api.User;
 import edu.stanford.protege.metaproject.api.UserId;
@@ -30,107 +28,122 @@ public class UserCrudTest extends BaseTest {
 
     private LocalHttpClient admin;
 
+    private ServerConfiguration initialConfiguration;
+
     @Rule
     public ExpectedException thrown = ExpectedException.none();
 
     @Before
-    public void loginAsAdmin() throws Exception {
-        admin = (LocalHttpClient) connectAsAdmin();
+    public void setUp() throws Exception {
+        startCleanServer();
+        admin = connectAsAdmin();
+        initialConfiguration = admin.getCurrentConfig();
+    }
+
+    @After
+    public void cleanUp() throws Exception {
+        stopServer();
     }
 
     @Test
-    public void shouldCreateUserWithPassword() throws Exception {
+    public void shouldReadExistingUser() throws Exception {
+        UserId userId = TestUtils.createUserId("root");
         
-        UserId userId = TestUtils.createUserId("johndoe");
-        User user = TestUtils.createUser("johndoe", "John Doe", "john.doe@email.com");
-        Password password = TestUtils.createPassword("johndoepasswd");
+        // Perform the action
+        User rootUser = initialConfiguration.getUser(userId);
+        
+        // Assert the reading
+        assertThat(rootUser, is(not(nullValue())));
+        assertThat(rootUser.getId().get(), is("root"));
+        assertThat(rootUser.getName().get(), is("Root User"));
+        assertThat(rootUser.getEmailAddress().get(), is(""));
+    }
+
+    @Test
+    public void shouldCreateNewUserWithPassword() throws Exception {
+        // Build
+        UserId userId = TestUtils.createUserId("john");
+        User user = TestUtils.createUser("john", "John Doe", "john.doe@email.com");
+        Password password = TestUtils.createPassword("johnpwd");
         
         // Assert before the addition
-        ServerConfiguration sc = admin.getCurrentConfig();
-        assertThat(sc.containsUser(userId), is(false));
+        assertThat(initialConfiguration.containsUser(userId), is(false));
         
         // Perform the action
         admin.createUser(user, Optional.of(password));
         admin.reallyPutConfig(); // upload changes to server
         
         // Assert after the addition
-        ServerConfiguration nsc = admin.getCurrentConfig();
-        assertThat(nsc.containsUser(user), is(true));
-        assertThat(nsc.getUser(userId), is(user));
-        assertThat(nsc.getUser(userId).getName().get(), is("John Doe"));
-        assertThat(nsc.getUser(userId).getEmailAddress().get(), is("john.doe@email.com"));
+        ServerConfiguration configAfterAddition = admin.getCurrentConfig();
+        assertThat(configAfterAddition.containsUser(user), is(true));
+        assertThat(configAfterAddition.getUser(userId), is(user));
+        assertThat(configAfterAddition.getUser(userId).getName().get(), is("John Doe"));
+        assertThat(configAfterAddition.getUser(userId).getEmailAddress().get(), is("john.doe@email.com"));
     }
 
     @Test
-    public void shouldCreateUserWithoutPassword() throws Exception {
-        
-        UserId userId = TestUtils.createUserId("marydoe");
-        User user = TestUtils.createUser("marydoe", "Mary Doe", "mary.doe@email.com");
+    public void shouldCreateNewUserWithoutPassword() throws Exception {
+        UserId userId = TestUtils.createUserId("mary");
+        User user = TestUtils.createUser("mary", "Mary Doe", "mary.doe@email.com");
         
         // Assert before the addition
-        ServerConfiguration sc = admin.getCurrentConfig();
-        assertThat(sc.containsUser(userId), is(false));
+        assertThat(initialConfiguration.containsUser(userId), is(false));
         
         // Perform the action
         admin.createUser(user, Optional.empty());
         admin.reallyPutConfig(); // upload changes to server
         
         // Assert after the addition
-        ServerConfiguration nsc = admin.getCurrentConfig();
-        assertThat(nsc.containsUser(user), is(true));
-        assertThat(nsc.getUser(userId), is(user));
-        assertThat(nsc.getUser(userId).getName().get(), is("Mary Doe"));
-        assertThat(nsc.getUser(userId).getEmailAddress().get(), is("mary.doe@email.com"));
+        ServerConfiguration configAfterAddition = admin.getCurrentConfig();
+        assertThat(configAfterAddition.containsUser(user), is(true));
+        assertThat(configAfterAddition.getUser(userId), is(user));
+        assertThat(configAfterAddition.getUser(userId).getName().get(), is("Mary Doe"));
+        assertThat(configAfterAddition.getUser(userId).getEmailAddress().get(), is("mary.doe@email.com"));
     }
 
     @Test
-    public void shouldDeleteUser() throws Exception {
+    public void shouldUpdateExistingUser() throws Exception {
+        UserId userId = TestUtils.createUserId("guest");
         
-        UserId userId = TestUtils.createUserId("alice");
+        // Assert before the update
+        User userBob = initialConfiguration.getUser(userId);
+        assertThat(userBob, is(not(nullValue())));
+        assertThat(userBob.getName().get(), is("Guest User"));
+        assertThat(userBob.getEmailAddress().get(), is(""));
+        
+        // Perform the action
+        User updatedUser = TestUtils.createUser("guest", "VIP Guest", "guest@email.com");
+        admin.updateUser(userId, updatedUser, Optional.empty());
+        admin.reallyPutConfig(); // upload changes to server
+        
+        // Assert after the update
+        ServerConfiguration configAfterUpdating = admin.getCurrentConfig();
+        User updatedUserBob = configAfterUpdating.getUser(userId);
+        assertThat(updatedUserBob, is(not(nullValue())));
+        assertThat(updatedUserBob, is(updatedUser));
+        assertThat(updatedUserBob.getName().get(), is("VIP Guest"));
+        assertThat(updatedUserBob.getEmailAddress().get(), is("guest@email.com"));
+    }
+
+    @Test
+    public void shouldDeleteExistingUser() throws Exception {
+        UserId userId = TestUtils.createUserId("guest");
         
         // Assert before the deletion
-        ServerConfiguration sc = admin.getCurrentConfig();
-        assertThat(sc.containsUser(userId), is(true));
-        assertThat(sc.getUserRoleMap(userId).isEmpty(), is(false));
+        assertThat(initialConfiguration.containsUser(userId), is(true));
+        assertThat(initialConfiguration.getPolicyMap().keySet().contains(userId), is(true));
+        assertThat(initialConfiguration.getAuthenticationDetails(userId), is(not(nullValue())));
         
         // Perform the action
         admin.deleteUser(userId);
         admin.reallyPutConfig(); // upload changes to server
         
         // Assert after the deletion
-        ServerConfiguration nsc = admin.getCurrentConfig();
-        assertThat(nsc.containsUser(userId), is(false));
-        
-        // Check if the user is no longer recorded in the policy
-        Map<UserId, Map<ProjectId, Set<RoleId>>> policyMap = nsc.getPolicyMap();
-        Set<UserId> existingUsersInPolicy = policyMap.keySet();
-        assertThat(existingUsersInPolicy.contains(userId), is(false));
+        ServerConfiguration configAfterDeletion = admin.getCurrentConfig();
+        assertThat(configAfterDeletion.containsUser(userId), is(false));
+        assertThat(configAfterDeletion.getPolicyMap().keySet().contains(userId), is(false));
         
         thrown.expect(UserNotRegisteredException.class);
-        nsc.getAuthenticationDetails(userId);
-    }
-
-    @Test
-    public void shouldUpdateUser() throws Exception {
-        
-        UserId userId = TestUtils.createUserId("bob");
-        
-        // Assert before the update
-        ServerConfiguration sc = admin.getCurrentConfig();
-        User user = sc.getUser(userId);
-        assertThat(user, is(notNullValue()));
-        assertThat(sc.getUser(userId).getName().get(), is("bob"));
-        assertThat(sc.getUser(userId).getEmailAddress().get(), is("bob"));
-        
-        // Perform the action
-        User updatedUser = TestUtils.createUser("bob", "Bob Underwood", "bob.underwood@email.com");
-        admin.updateUser(userId, updatedUser, Optional.empty());
-        admin.reallyPutConfig(); // upload changes to server
-        
-        // Assert after the update
-        ServerConfiguration nsc = admin.getCurrentConfig();
-        assertThat(nsc.getUser(userId), is(updatedUser));
-        assertThat(nsc.getUser(userId).getName().get(), is("Bob Underwood"));
-        assertThat(nsc.getUser(userId).getEmailAddress().get(), is("bob.underwood@email.com"));
+        configAfterDeletion.getAuthenticationDetails(userId);
     }
 }
