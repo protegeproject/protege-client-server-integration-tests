@@ -1,107 +1,122 @@
 package org.protege.editor.owl.integration;
 
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.not;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.protege.editor.owl.client.LocalHttpClient;
-import org.protege.editor.owl.client.api.Client;
 import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
-import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import edu.stanford.protege.metaproject.api.Description;
-import edu.stanford.protege.metaproject.api.Name;
-import edu.stanford.protege.metaproject.api.PlainPassword;
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
 import edu.stanford.protege.metaproject.api.ProjectOptions;
-import edu.stanford.protege.metaproject.api.UserId;
+import edu.stanford.protege.metaproject.api.ServerConfiguration;
+import edu.stanford.protege.metaproject.impl.ProjectOptionsImpl;
 
-public class LargeProjectTest extends BaseTest {
+/**
+ * @author Bob Dionne <dionne@dionne-associates.com> <br>
+ * @author Josef Hardi <johardi@stanford.edu> <br>
+ * Stanford Center for Biomedical Informatics Research
+ */
+public class LargeProjectTest extends ProjectBaseTest {
+
     private ProjectId projectId;
 
-    private final OWLOntologyManager owlManager = OWLManager.createOWLOntologyManager();
+    private LocalHttpClient admin;
 
-    @Test
-    public void createLargeProject() throws Exception {
-        /*
-         * [GUI] The input project properties
-         */
-        connectToServer(ADMIN_SERVER_ADDRESS);
-        projectId = f.getProjectId("BiomedGT-" + System.currentTimeMillis());
-        Name projectName = f.getName("NCI Thesaurus");
-        Description description = f
-                .getDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit");
-        UserId owner = f.getUserId("root");
+    private ServerDocument projectDocument;
 
-        Optional<ProjectOptions> options = Optional.ofNullable(null);
-
-        Project proj = f.getProject(projectId, projectName, description,
-                LargeOntology.getResource(), owner, options);
-
-        ServerDocument serverDocument = getAdmin().createProject(proj);
-
-        // Assert the server document
-        assertThat(serverDocument, is(notNullValue()));
-        assertThat(serverDocument.getServerAddress(), is(URI.create(SERVER_ADDRESS)));
-        assertThat(serverDocument.getHistoryFile(), is(notNullValue()));
-
-        // Assert the remote change history
-        connectToServer(SERVER_ADDRESS);
-        ChangeHistory remoteChangeHistory = ((LocalHttpClient) getAdmin())
-                .getAllChanges(serverDocument);
-        assertThat("The remote change history should be empty", remoteChangeHistory.isEmpty());
-        assertThat(remoteChangeHistory.getBaseRevision(), is(R0));
-        assertThat(remoteChangeHistory.getHeadRevision(), is(R0));
-        assertThat(remoteChangeHistory.getMetadata().size(), is(0));
-        assertThat(remoteChangeHistory.getRevisions().size(), is(0));
+    @Before
+    public void setUp() throws Exception {
+        startCleanServer();
+        admin = connectAsAdmin();
+        projectId = createThesaurusProject();
     }
 
     @After
-    public void shouldDownloadRemoteChanges() throws Exception {
-        /*
-         * Login as Guest
-         */
-        UserId guestId = f.getUserId("guest");
-        PlainPassword guestPassword = f.getPlainPassword("guestpwd");
-        Client guest = login(guestId, guestPassword, SERVER_ADDRESS);
-
-        ServerDocument serverDocument = guest.openProject(projectId);
-        VersionedOWLOntology vont = ((LocalHttpClient) guest).buildVersionedOntology(serverDocument,
-                owlManager, projectId);
-        ChangeHistory changeHistoryFromClient = vont.getChangeHistory();
-
-        // Assert the remote change history
-        assertThat("The local change history should be empty", changeHistoryFromClient.isEmpty());
-        assertThat(changeHistoryFromClient.getBaseRevision(), is(R0));
-        assertThat(changeHistoryFromClient.getHeadRevision(), is(R0));
-        assertThat(changeHistoryFromClient.getMetadata().size(), is(0));
-        assertThat(changeHistoryFromClient.getRevisions().size(), is(0));
-
-        ChangeHistory changeHistoryFromServer = ((LocalHttpClient) guest)
-                .getAllChanges(vont.getServerDocument());
-
-        // Assert the remote change history
-        assertThat("The remote change history should be empty", changeHistoryFromServer.isEmpty());
-        assertThat(changeHistoryFromServer.getBaseRevision(), is(R0));
-        assertThat(changeHistoryFromServer.getHeadRevision(), is(R0));
-        assertThat(changeHistoryFromServer.getMetadata().size(), is(0));
-        assertThat(changeHistoryFromServer.getRevisions().size(), is(0));
-
-        // assertThat(changeHistoryFromClient.getChangesForRevision(R1).size(),
-        // is(changeHistoryFromServer.getChangesForRevision(R1).size()));
-
-        connectToServer(ADMIN_SERVER_ADDRESS);
-
-        getAdmin().deleteProject(projectId, true);
+    public void cleanUp() throws Exception {
+        stopServer();
+        removeDataDirectory();
+        removeSnapshotFiles();
     }
 
+    private ProjectId createThesaurusProject() throws Exception {
+        ProjectOptions projectOptions = createProjectOptions();
+        Project pizzaProject = TestUtils.createProject("biomedgt-project", "NCI Thesaurus Project",
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+                PizzaOntology.getResource(), // XXX: the specification for input file parameter in
+                                             // project is not for the ontology file but instead
+                                             // for the history file
+                "guest", Optional.of(projectOptions));
+        ServerDocument serverDocument = admin.createProject(pizzaProject);
+        setServerDocument(serverDocument);
+        return pizzaProject.getId();
+    }
+
+    private ProjectOptions createProjectOptions() {
+        Map<String, Set<String>> options = new HashMap<>();
+        options.put("key_a", new HashSet<String>(Arrays.asList("value_1", "value_2")));
+        options.put("key_b", new HashSet<String>(Arrays.asList("value_3")));
+        return new ProjectOptionsImpl(options);
+    }
+
+    private void setServerDocument(ServerDocument projectDocument) {
+        this.projectDocument = projectDocument;
+    }
+
+    @Test
+    public void shouldReadProjectProperties() throws Exception {
+        ServerConfiguration configAfterCreation = admin.getCurrentConfig();
+        
+        // Assert the server configuration
+        assertThat(configAfterCreation.containsProject(projectId), is(true));
+        assertThat(configAfterCreation.getProject(projectId), is(not(nullValue())));
+        assertThat(configAfterCreation.getProject(projectId).getId().get(), is("biomedgt-project"));
+        assertThat(configAfterCreation.getProject(projectId).getName().get(), is("NCI Thesaurus Project"));
+        assertThat(configAfterCreation.getProject(projectId).getDescription().get(),
+                is("Lorem ipsum dolor sit amet, consectetur adipiscing elit"));
+        assertThat(configAfterCreation.getProject(projectId).getOwner().get(), is("guest"));
+        assertThat(configAfterCreation.getProject(projectId).getOptions(),
+                is(Optional.of(createProjectOptions())));
+    }
+
+    @Test
+    public void shouldReadServerDocumentAfterCreatingNewProject() throws Exception {
+        // Assert the returned server document
+        assertThat(projectDocument, is(not(nullValue())));
+        assertThat(projectDocument.getServerAddress(), is(URI.create(SERVER_ADDRESS)));
+        assertThat(projectDocument.getRegistryPort(), is(8081));
+        assertThat(projectDocument.getHistoryFile(), is(not(nullValue())));
+        assertThat(projectDocument.getHistoryFile().getName(), is("NCI_Thesaurus_Project.history"));
+    }
+
+    @Test
+    public void shouldReadInitialChangeHistory() throws Exception {
+        // Retrieve the initial changes as a guest user
+        LocalHttpClient guestUser = connectAsGuest();
+        ChangeHistory initialHistory = guestUser.getAllChanges(projectDocument);
+        
+        // Assert the returned server document
+        assertThat(initialHistory, is(not(nullValue())));
+        assertThat(initialHistory.isEmpty(), is(true));
+        assertThat(initialHistory.getBaseRevision(), is(R0)); // Revision 0
+        assertThat(initialHistory.getHeadRevision(), is(R0)); // Revision 0
+        assertThat(initialHistory.getMetadata(), is(not(nullValue())));
+        assertThat(initialHistory.getMetadata().isEmpty(), is(true));
+        assertThat(initialHistory.getRevisions(), is(not(nullValue())));
+        assertThat(initialHistory.getRevisions().isEmpty(), is(true));
+    }
 }
