@@ -3016,7 +3016,6 @@
         <rdf:type rdf:resource="&owl;Thing"/>
     </Country>
     <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDifferent"/>
         <owl:distinctMembers rdf:parseType="Collection">
             <rdf:Description rdf:about="#America"/>
             <rdf:Description rdf:about="#Italy"/>
@@ -3034,7 +3033,6 @@
         <rdf:type rdf:resource="#Country"/>
     </owl:Thing>
     <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDifferent"/>
         <owl:distinctMembers rdf:parseType="Collection">
             <rdf:Description rdf:about="#America"/>
             <rdf:Description rdf:about="#Italy"/>
@@ -3052,7 +3050,6 @@
         <rdf:type rdf:resource="&owl;Thing"/>
     </Country>
     <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDifferent"/>
         <owl:distinctMembers rdf:parseType="Collection">
             <rdf:Description rdf:about="#America"/>
             <rdf:Description rdf:about="#Italy"/>
@@ -3070,7 +3067,6 @@
         <rdf:type rdf:resource="#Country"/>
     </owl:Thing>
     <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDifferent"/>
         <owl:distinctMembers rdf:parseType="Collection">
             <rdf:Description rdf:about="#America"/>
             <rdf:Description rdf:about="#Italy"/>
@@ -3088,7 +3084,6 @@
         <rdf:type rdf:resource="#Country"/>
     </owl:Thing>
     <rdf:Description>
-        <rdf:type rdf:resource="&owl;AllDifferent"/>
         <owl:distinctMembers rdf:parseType="Collection">
             <rdf:Description rdf:about="#America"/>
             <rdf:Description rdf:about="#Italy"/>
