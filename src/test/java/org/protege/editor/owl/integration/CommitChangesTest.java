@@ -202,7 +202,7 @@ public class CommitChangesTest extends ProjectBaseTest {
     }
 
     private void setVersionedOntology(LocalHttpClient author, ServerDocument serverDocument) throws Exception {
-        versionedOntology = author.buildVersionedOntology(serverDocument, ontologyManager, projectId);
+        versionedOntology = author.buildVersionedOntology(serverDocument, projectId);
     }
 
     private List<OWLOntologyChange> simulateAddingAxiomInOntology(OWLOntology workingOntology) {

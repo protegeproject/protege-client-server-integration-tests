@@ -34,12 +34,10 @@ import org.protege.editor.owl.server.versioning.api.ChangeHistory;
 import org.protege.editor.owl.server.versioning.api.DocumentRevision;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
 import org.protege.editor.owl.server.versioning.api.VersionedOWLOntology;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import edu.stanford.protege.metaproject.api.Password;
 import edu.stanford.protege.metaproject.api.Project;
@@ -56,8 +54,6 @@ public class ConcurentCommitChangesTest extends ProjectBaseTest {
     private static final OWLClass CUSTOMER = Class(IRI(ONTOLOGY_ID, "Customer"));
 
     private final ExecutorService executionService = Executors.newFixedThreadPool(3);
-
-    private OWLOntologyManager ontologyManager;
 
     private ProjectId projectId;
 
@@ -103,19 +99,16 @@ public class ConcurentCommitChangesTest extends ProjectBaseTest {
         /*
          * Construct commit bundles from 3 different users
          */
-        setOntologyManager(OWLManager.createOWLOntologyManager());
         LocalHttpClient adminUser = connect("root", "rootpwd", SERVER_ADDRESS);
         VersionedOWLOntology adminVersionedOntology = openRemoteProjectAndGetVersionedOntology(adminUser);
         CommitBundle adminCommitBundle = simulateMakingChangesAndCreateCommitBundle(adminUser,
                 "Add a subclass axiom", adminVersionedOntology);
         
-        setOntologyManager(OWLManager.createOWLOntologyManager());
         LocalHttpClient guestUser = connect("guest", "guestpwd", SERVER_ADDRESS);
         VersionedOWLOntology guestVersionedOntology = openRemoteProjectAndGetVersionedOntology(guestUser);
         CommitBundle guestCommitBundle = simulateMakingChangesAndCreateCommitBundle(guestUser,
                 "Add a new classification to the ontology", guestVersionedOntology);
         
-        setOntologyManager(OWLManager.createOWLOntologyManager());
         LocalHttpClient johnUser = connect("john", "johnpwd", SERVER_ADDRESS);
         VersionedOWLOntology johnVersionedOntology = openRemoteProjectAndGetVersionedOntology(guestUser);
         CommitBundle johnCommitBundle = simulateMakingChangesAndCreateCommitBundle(guestUser,
@@ -196,28 +189,20 @@ public class ConcurentCommitChangesTest extends ProjectBaseTest {
         assertThat(changeHistoryFromServer.getChangesForRevision(R1).size(), is(2));
     }
 
-    private void setOntologyManager(OWLOntologyManager ontologyManager) {
-        this.ontologyManager = ontologyManager;
-    }
-
-    private OWLOntologyManager getCurrentOntologyManager() {
-        return ontologyManager;
-    }
-
     /*
      * A collection of private helper methods
      */
 
     private VersionedOWLOntology openRemoteProjectAndGetVersionedOntology(LocalHttpClient client) throws Exception {
         ServerDocument serverDocument = client.openProject(projectId);
-        return client.buildVersionedOntology(serverDocument, getCurrentOntologyManager(), projectId);
+        return client.buildVersionedOntology(serverDocument, projectId);
     }
 
     private CommitBundle simulateMakingChangesAndCreateCommitBundle(LocalHttpClient client,
             String commitMessage, VersionedOWLOntology versionedOntology) throws Exception {
         OWLOntology workingOntology = versionedOntology.getOntology();
         List<OWLOntologyChange> userChanges = simulateAddingAxiomInOntology(workingOntology);
-        applyUserChanges(userChanges);
+        workingOntology.getOWLOntologyManager().applyChanges(userChanges);
         return createCommitBundle(client,
                 userChanges, // This input could be obtained from some history manager in Protege
                 commitMessage, versionedOntology.getHeadRevision());
@@ -233,10 +218,6 @@ public class ConcurentCommitChangesTest extends ProjectBaseTest {
     private CommitBundle createCommitBundle(Client author, List<OWLOntologyChange> changes, String message, DocumentRevision headRevision) {
         Commit commit = ClientUtils.createCommit(author, message, changes);
         return new CommitBundleImpl(headRevision, commit);
-    }
-
-    private void applyUserChanges(List<OWLOntologyChange> userChanges) {
-        getCurrentOntologyManager().applyChanges(userChanges);
     }
 
     private void updateLocalChangeHistory(VersionedOWLOntology versionedOntology, ChangeHistory changes) {

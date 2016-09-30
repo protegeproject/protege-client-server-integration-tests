@@ -19,10 +19,8 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.protege.editor.owl.client.LocalHttpClient;
 import org.protege.editor.owl.server.versioning.api.ServerDocument;
-import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
 
 import edu.stanford.protege.metaproject.api.Project;
 import edu.stanford.protege.metaproject.api.ProjectId;
@@ -35,8 +33,6 @@ import edu.stanford.protege.metaproject.impl.ProjectOptionsImpl;
  * Stanford Center for Biomedical Informatics Research
  */
 public class ProjectCrudTest extends ProjectBaseTest {
-
-    private final OWLOntologyManager ontologyManager = OWLManager.createOWLOntologyManager();
 
     private ProjectId projectId;
 
@@ -101,7 +97,7 @@ public class ProjectCrudTest extends ProjectBaseTest {
 
     private OWLOntology getDownloadedOntology(LocalHttpClient client, ServerDocument serverDocument)
             throws Exception {
-        return client.buildVersionedOntology(serverDocument, ontologyManager, projectId).getOntology();
+        return client.buildVersionedOntology(serverDocument, projectId).getOntology();
     }
 
     @Test
